@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - My Report Card</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #e5e5e5;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background-color: #fb5bb2;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 600;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .nav-link.active {
+            border-right: 4px solid #fb5bb2;
+        }
+
+        /* --- TOP NAVBAR --- */
+        .topbar {
+            margin-left: 260px;
+            height: 80px;
+            background-color: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 40px;
+        }
+
+        .user-profile {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e5e5;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- CARDS --- */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background-color: white;
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .student-header {
+            background-color: white;
+            border-bottom: 2px solid #f0f0f0;
+            padding: 25px;
+        }
+
+        /* --- REPORT CARD TABLE STYLES --- */
+        .report-card-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0;
+            font-family: serif; 
+        }
+        
+        .report-card-table th, .report-card-table td {
+            border: 1px solid #333 !important; 
+            color: #000;
+        }
+
+        .report-card-table thead th {
+            background-color: #e0e0e0 !important; 
+            font-weight: bold;
+            text-align: center;
+            vertical-align: middle;
+            padding: 12px 10px;
+            font-size: 1.1rem;
+        }
+
+        .report-card-table tbody td {
+            vertical-align: middle;
+            padding: 10px 15px;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .report-card-table .subject-cell {
+            text-align: left;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FGISS</h2>
+    </div>
+    <nav class="mt-4">
+        <a class="nav-link active" href="/report-cards/"><i class="bi bi-journal-text"></i> My Grades</a>
+        <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+        <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    </nav>
+</div>
+
+<div class="topbar">
+    <div class="user-profile">
+        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
+        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+
+    {% if error %}
+    <div class="alert alert-danger w-100 mb-4" style="max-width: 900px;">
+        {{ error }}
+    </div>
+    {% endif %}
+    
+    <div class="card">
+        {% if selected_student %}
+        <div class="student-header text-start">
+            <span class="text-muted small text-uppercase fw-bold d-block mb-1">Student Name</span>
+            <h3 class="fw-bold text-dark mb-0">{{ selected_student.first_name }} {{ selected_student.last_name }}</h3>
+        </div>
+
+        <div class="table-responsive p-4">
+            <h5 class="fw-bold mb-3" style="font-family: serif;">Table 8. Final Grades and General Average</h5>
+            <table class="table report-card-table">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 35%;">Learning Area</th>
+                        <th colspan="4">Quarter</th>
+                        <th rowspan="2" style="width: 15%;">Final Grade</th>
+                    </tr>
+                    <tr>
+                        <th style="width: 10%;">1</th>
+                        <th style="width: 10%;">2</th>
+                        <th style="width: 10%;">3</th>
+                        <th style="width: 10%;">4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr>
+                        <td class="subject-cell">{{ grade.subject }}</td>
+                        <td>{{ grade.q1|floatformat:0 }}</td>
+                        <td>{{ grade.q2|floatformat:0 }}</td>
+                        <td>{{ grade.q3|floatformat:0 }}</td>
+                        <td>{{ grade.q4|floatformat:0 }}</td>
+                        <td>{{ grade.final_grade|floatformat:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-4 text-muted">No grades recorded for your account.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if grades %}
+                <tfoot>
+                    <tr>
+                        <td colspan="5" class="text-end fw-bold pe-4">General Average</td>
+                        <td class="fw-bold">{{ average|floatformat:0 }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+        </div>
+        {% else %}
+        <div class="p-5 text-center">
+            <h5 class="text-muted">No student record found for your account.</h5>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+</body>
+</html>

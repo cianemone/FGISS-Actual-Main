@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - Exam Schedules</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #e5e5e5;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background-color: #fb5bb2;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .sidebar-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .sidebar-nav {
+            margin-top: 20px;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 600;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .nav-link.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+            border-right: 4px solid #fb5bb2;
+        }
+
+        /* --- TOP NAVBAR --- */
+        .topbar {
+            margin-left: 260px;
+            height: 80px;
+            background-color: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 40px;
+        }
+        
+        .user-profile {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e5e5;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 50px;
+        }
+
+        /* --- CARDS & PANELS --- */
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            background-color: white;
+            margin-bottom: 25px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .section-label {
+            font-size: 0.85rem;
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .form-control:focus {
+            border-color: #fb5bb2;
+            box-shadow: 0 0 0 0.2rem rgba(251, 91, 178, 0.15);
+        }
+
+        /* Search input specific styles */
+        .input-group-text {
+            background-color: white;
+            border: 1px solid #dee2e6;
+            border-left: none;
+            color: #888;
+        }
+        .input-with-icon {
+            border-right: none;
+        }
+        .input-with-icon:focus + .input-group-text {
+            border-color: #fb5bb2;
+        }
+
+        .btn-pink {
+            background-color: #fb5bb2;
+            color: white;
+            padding: 10px 40px;
+            border-radius: 6px;
+            font-weight: 600;
+            border: none;
+            transition: 0.2s;
+        }
+        .btn-pink:hover { background-color: #d65aa0; color: white; }
+
+        /* --- TABLE STYLING --- */
+        .custom-table {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        .custom-table th {
+            color: #666;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 15px 20px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .custom-table td {
+            padding: 15px 20px;
+            vertical-align: middle;
+            color: #333;
+            font-weight: 600;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .date-time {
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .icon-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0;
+        }
+
+        /* Expanded Coverage Box */
+        .coverage-details-row td {
+            padding: 0 20px 20px 20px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .coverage-box {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 15px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FGISS</h2>
+        <p>{% if request.session.user_type == 'student' %}Student Portal{% else %}Admin Portal{% endif %}</p>
+    </div>
+    <nav class="mt-4">
+        {% if request.session.user_type == 'student' %}
+            <!-- Student Records for Student View -->
+            <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+            <a class="nav-link" href="/report-cards/"><i class="bi bi-journal-text"></i> My Grades</a>
+            <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a class="nav-link active" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        {% else %}
+            {% if request.session.user_type == 'admin' %}
+            <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+            {% endif %}
+            
+            <!-- Student Records for Admin/Staff -->
+            <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+
+            <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' %}
+            <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+            <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a class="nav-link active" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+            {% endif %}
+        {% endif %}
+
+        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    </nav>
+</div>
+
+<div class="topbar">
+    <div class="user-profile">
+        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
+        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <div class="mb-4">
+        <h3 class="fw-bold text-dark mb-1">Exams</h3>
+        <p class="text-muted small mb-0">Academic Year 2025-2026</p>
+    </div>
+
+    <div class="card p-4 mb-4">
+        <label class="text-dark fs-6 fw-bold mb-3">Filter</label>
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="section-label">Class</label>
+                <div class="input-group">
+                    <input type="text" class="form-control input-with-icon" placeholder="Search...">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="section-label">Grade Level</label>
+                <div class="input-group">
+                    <input type="text" class="form-control input-with-icon" placeholder="Search...">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <label class="section-label">Term</label>
+                <div class="input-group">
+                    <input type="text" class="form-control input-with-icon" placeholder="Search...">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                </div>
+            </div>
+            <div class="col-md-3 text-end">
+                <button class="btn btn-pink w-100 py-2">Apply</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4">
+        <div class="table-responsive">
+            <table class="table custom-table table-borderless">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Class</th>
+                        <th style="width: 15%; text-align: center;">Section</th>
+                        <th style="width: 15%; text-align: center;">Grade Level</th>
+                        <th style="width: 15%; text-align: center;">Term</th>
+                        <th style="width: 15%; text-align: center;">Coverage</th>
+                        <th style="width: 20%;">Date & Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Mathematics</td>
+                        <td class="text-center">A</td>
+                        <td class="text-center">3</td>
+                        <td class="text-center">2</td>
+                        <td class="text-center"><button class="icon-btn"><i class="bi bi-chevron-down"></i></button></td>
+                        <td>
+                            <div class="date-time">
+                                12 Jul 2025<br>13:00
+                            </div>
+                         </td>
+                     </tr>
+                    
+                    <tr>
+                        <td>History</td>
+                        <td class="text-center">B</td>
+                        <td class="text-center">3</td>
+                        <td class="text-center">2</td>
+                        <td class="text-center"><button class="icon-btn"><i class="bi bi-chevron-down"></i></button></td>
+                        <td>
+                            <div class="date-time">
+                                16 Sep 2025<br>13:00
+                            </div>
+                         </td>
+                     </tr>
+
+                    <tr style="border-bottom: none;">
+                        <td>P.E.</td>
+                        <td class="text-center" style="border-bottom: none;">C</td>
+                        <td class="text-center" style="border-bottom: none;">4</td>
+                        <td class="text-center" style="border-bottom: none;">1</td>
+                        <td class="text-center" style="border-bottom: none;"><button class="icon-btn"><i class="bi bi-chevron-up"></i></button></td>
+                        <td style="border-bottom: none;">
+                            <div class="date-time">
+                                26 Jan 2026<br>13:00
+                            </div>
+                         </td>
+                     </tr>
+                    
+                    <tr class="coverage-details-row">
+                        <td colspan="6">
+                            <div class="coverage-box">
+                                Exam Coverage: Motor Skills 1<br>
+                                10 Jumping Jacks<br>
+                                10 High-Knees...
+                            </div>
+                         </td>
+                     </tr>
+
+                </tbody>
+             </table>
+        </div>
+        
+        <div class="d-flex justify-content-end mt-4">
+            <button class="btn btn-pink px-5">Edit</button>
+        </div>
+    </div>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,149 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body { 
+            background-color: #f4f5f7; /* Matching the light gray background */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+        }
+        .login-card {
+            max-width: 480px; /* Slightly wider to match the screenshot */
+            width: 100%;
+            border: none;
+            border-top: 15px solid #ee7ab5; /* Thick pink top border */
+            border-radius: 12px;
+            margin: 50px auto; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08); /* Soft drop shadow */
+        }
+        .btn-school {
+            background-color: #ee7ab5; /* Matching pink color */
+            color: white;
+            font-weight: 700;
+            border: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-school:hover { 
+            background-color: #d96a9f; 
+            color: white; 
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(238, 122, 181, 0.2);
+        }
+        .btn-outline-school {
+            background-color: transparent;
+            color: #ee7ab5;
+            border: 2px solid #ee7ab5;
+            font-weight: 700;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-school:hover { 
+            background-color: #ee7ab5; 
+            color: white; 
+            transform: translateY(-1px);
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 12px 15px;
+        }
+        .form-control:focus {
+            border-color: #ee7ab5;
+            box-shadow: 0 0 0 0.25rem rgba(238, 122, 181, 0.15);
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="d-flex align-items-center justify-content-center" style="min-height: 100vh;">
+        <div class="card login-card p-4">
+            <div class="card-body px-3">
+                <div class="text-center mb-4">
+                    <img src="{% static 'fugen-logo.jpg' %}" alt="School Logo" style="width: 90px; height: 90px; border: 1px solid #eee; border-radius: 50%; padding: 5px; object-fit: contain; background: white;">
+                    
+                    <h3 class="mt-4 fw-bold text-dark">Welcome</h3>
+                    <p class="text-muted mb-4" style="font-size: 0.9rem;">Future Generation Integrated SIS</p>
+                </div>
+                
+                <form id="loginForm">
+                    {% csrf_token %}
+                    <div id="loginMessage" class="alert alert-danger d-none" role="alert" style="font-size: 0.85rem; border-radius: 8px;"></div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" id="email" name="email" class="form-control" placeholder="name@email.com" required>
+                    </div>
+                    <div class="mb-2">
+                        <label class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="d-flex justify-content-end mb-4">
+                        <a href="#" class="small text-decoration-none" style="color: #6c757d;">Forgot Password?</a>
+                    </div>
+                    
+                    <div class="d-grid gap-2 mb-3">
+                        <button type="submit" class="btn btn-school py-3">SIGN IN</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="card-footer bg-white border-0 text-center pb-3">
+                <a href="#" class="small text-decoration-none" style="color: #6c757d;">Contact Support</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const loginForm = document.getElementById('loginForm');
+        const loginMessage = document.getElementById('loginMessage');
+        
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                return;
+            }
+
+            const formData = new FormData(loginForm);
+            
+            try {
+                const response = await fetch('/login-check/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    window.location.href = result.redirect_url;
+                } else {
+                    loginMessage.textContent = result.message || "Invalid credentials. Please try again.";
+                    loginMessage.classList.remove('d-none');
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                loginMessage.textContent = "An error occurred during login.";
+                loginMessage.classList.remove('d-none');
+            }
+        });
+    </script>
+</body>
+</html>

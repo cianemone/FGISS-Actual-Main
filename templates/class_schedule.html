@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - Class Schedule</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #e5e5e5;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background-color: #fb5bb2;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .sidebar-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 600;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .nav-link.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+            border-right: 4px solid #fb5bb2;
+        }
+
+        /* --- TOP NAVBAR --- */
+        .topbar {
+            margin-left: 260px;
+            height: 80px;
+            background-color: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 40px;
+        }
+
+        .user-profile {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e5e5;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 50px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background-color: white;
+            border: 1px solid #e5e5e5;
+        }
+        
+        .table thead th {
+            background-color: #f8f9fc;
+            color: #5a5c69;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 15px 25px;
+        }
+        
+        .table tbody td {
+            vertical-align: middle;
+            padding: 18px 25px;
+            color: #444;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FGISS</h2>
+        <p>{% if request.session.user_type == 'student' %}Student Portal{% else %}Admin Portal{% endif %}</p>
+    </div>
+    <nav class="mt-4">
+        {% if request.session.user_type == 'student' %}
+            <!-- Student Records for Student View -->
+            <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+            <a class="nav-link" href="/report-cards/"><i class="bi bi-journal-text"></i> My Grades</a>
+            <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link active" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        {% else %}
+            {% if request.session.user_type == 'admin' %}
+            <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+            {% endif %}
+            
+            <!-- Student Records for Admin/Staff -->
+            <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+            <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+            {% endif %}
+            
+            <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+            <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link active" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+            {% endif %}
+        {% endif %}
+        
+        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    </nav>
+</div>
+
+<div class="topbar">
+    <div class="user-profile">
+        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
+        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold mb-1">Class Schedule</h3>
+            <p class="text-muted small mb-0">Academic Year 2025-2026</p>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Class Name</th>
+                        <th>Teacher</th>
+                        <th>Day</th>
+                        <th>Time</th>
+                        <th>Room</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for schedule in schedules %}
+                    <tr>
+                        <td class="fw-bold">{{ schedule.class_name }}</td>
+                        <td>{{ schedule.teacher.get_full_name|default:schedule.teacher.username|default:"TBA" }}</td>
+                        <td>{{ schedule.day_of_week }}</td>
+                        <td>{{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}</td>
+                        <td>{{ schedule.room }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="text-center py-4 text-muted">No class schedules found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

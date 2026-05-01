@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - Interactive Student Grades</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #e5e5e5;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background-color: #fb5bb2;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .sidebar-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 600;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .nav-link.active {
+            border-right: 4px solid #fb5bb2;
+        }
+
+        /* --- TOP NAVBAR --- */
+        .topbar {
+            margin-left: 260px;
+            height: 80px;
+            background-color: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 40px;
+        }
+
+        .user-profile {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e5e5;
+        }
+
+        /* --- MAIN LAYOUT --- */
+        .main-content {
+            margin-left: 260px;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+            background-color: white;
+            width: 100%;
+            max-width: 900px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .report-card-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 0;
+            font-family: serif;
+        }
+        
+        .report-card-table th, .report-card-table td {
+            border: 1px solid #333 !important;
+            color: #000;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .report-card-table thead th {
+            background-color: #e0e0e0 !important;
+            font-weight: bold;
+        }
+
+        .editable-cell {
+            cursor: text;
+            transition: background 0.2s;
+        }
+
+        .editable-cell:focus {
+            background-color: #fffbe6;
+            outline: 2px solid #fb5bb2;
+        }
+
+        .btn-save-all {
+            background-color: #28a745;
+            color: white;
+            font-weight: 700;
+            border: none;
+            transition: all 0.3s;
+        }
+
+        .btn-save-all:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+        }
+
+        .history-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            background-color: #fb5bb2;
+            color: white;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FGISS</h2>
+        <p>Admin Portal</p>
+    </div>
+    <nav class="mt-4">
+        {% if request.session.user_type == 'admin' %}
+        <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+        <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+        {% endif %}
+        
+        <a class="nav-link active" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+       
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' %}
+        <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+        {% endif %}
+       
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+        <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+        <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        {% endif %}
+       
+        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    </nav>
+</div>
+
+<div class="topbar">
+    <div class="user-profile">
+        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
+        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+    </div>
+</div>
+
+<div class="main-content">
+
+    <!-- SELECTOR SECTION -->
+    <div class="card p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-7">
+                <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-person-circle me-1"></i> Select Student</label>
+                <select name="student_id" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="font-weight: 600;">
+                    {% for student in students %}
+                    <option value="{{ student.id }}" {% if selected_student.id == student.id %}selected{% endif %}>
+                        {{ student.first_name }} {{ student.last_name }} ({{ student.student_number }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> View Record For</label>
+                <select name="view_grade_level" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="font-weight: 600;">
+                    <option value="Grade 1" {% if current_view_level == "Grade 1" %}selected{% endif %}>Grade 1</option>
+                    <option value="Grade 2" {% if current_view_level == "Grade 2" %}selected{% endif %}>Grade 2</option>
+                    <option value="Grade 3" {% if current_view_level == "Grade 3" %}selected{% endif %}>Grade 3</option>
+                    <option value="Grade 4" {% if current_view_level == "Grade 4" %}selected{% endif %}>Grade 4</option>
+                    <option value="Grade 5" {% if current_view_level == "Grade 5" %}selected{% endif %}>Grade 5</option>
+                    <option value="Grade 6" {% if current_view_level == "Grade 6" %}selected{% endif %}>Grade 6</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- REPORT CARD TABLE -->
+    <div class="card">
+        <div class="p-4 d-flex justify-content-between align-items-center border-bottom">
+            <div>
+                <h4 class="fw-bold m-0" style="font-family: serif;">Table 8. Final Grades and General Average</h4>
+                <p class="text-muted small mb-0">Showing records for: <strong>{{ current_view_level }}</strong> 
+                   {% if selected_student.grade_level == current_view_level %}<span class="history-badge">Current Level</span>{% else %}<span class="history-badge bg-secondary">Historical Record</span>{% endif %}
+                </p>
+            </div>
+            <button id="saveButton" class="btn btn-save-all px-4 py-2 shadow-sm">
+                <i class="bi bi-cloud-arrow-up me-2"></i>SAVE ALL EDITS
+            </button>
+        </div>
+
+        <div class="table-responsive p-4">
+            <table class="table report-card-table" id="gradeTable">
+                <thead>
+                    <tr>
+                        <th rowspan="2" style="width: 35%;">Learning Area</th>
+                        <th colspan="4">Quarter</th>
+                        <th rowspan="2" style="width: 15%;">Final Grade</th>
+                    </tr>
+                    <tr>
+                        <th>1</th><th>2</th><th>3</th><th>4</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for grade in grades %}
+                    <tr data-grade-id="{{ grade.id }}" data-subject-id="{{ grade.subject.id }}">
+                        <td class="text-start fw-bold">{{ grade.subject.name }}</td>
+                        <td class="editable-cell" contenteditable="true">{{ grade.q1|default_if_none:"" }}</td>
+                        <td class="editable-cell" contenteditable="true">{{ grade.q2|default_if_none:"" }}</td>
+                        <td class="editable-cell" contenteditable="true">{{ grade.q3|default_if_none:"" }}</td>
+                        <td class="editable-cell" contenteditable="true">{{ grade.q4|default_if_none:"" }}</td>
+                        <td class="bg-light fw-bold">{{ grade.final_grade|floatformat:0 }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="py-5 text-muted text-center">
+                            <i class="bi bi-folder-x fs-2 d-block mb-2"></i>
+                            No subject records found for {{ current_view_level }}.<br>
+                            <small>Run your sync script to populate subjects for this grade.</small>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                {% if grades %}
+                <tfoot>
+                    <tr class="bg-light">
+                        <td colspan="5" class="text-end fw-bold pe-4">General Average</td>
+                        <td class="fw-bold">{{ average|floatformat:0 }}</td>
+                    </tr>
+                </tfoot>
+                {% endif %}
+            </table>
+            
+            <div class="mt-3 p-3 bg-light border rounded">
+                <p class="mb-0 small text-muted"><i class="bi bi-info-circle me-1"></i> 
+                    <strong>Instruction:</strong> Grades are saved per subject for the selected Grade Level. 
+                    If a student moves to a new grade, change their <strong>Grade Level</strong> in Student Records first.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('saveButton').addEventListener('click', function() {
+    const rows = document.querySelectorAll('#gradeTable tbody tr');
+    const data = [];
+
+    rows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        if (cells.length > 1) { 
+            data.push({
+                grade_id: row.getAttribute('data-grade-id'),
+                subject_id: row.getAttribute('data-subject-id'),
+                q1: cells[1].innerText.trim(),
+                q2: cells[2].innerText.trim(),
+                q3: cells[3].innerText.trim(),
+                q4: cells[4].innerText.trim()
+            });
+        }
+    });
+
+    fetch(window.location.href, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ 
+            grades: data,
+            grade_level: "{{ current_view_level }}"
+        })
+    })
+    .then(response => response.json())
+    .then(result => {
+        if(result.status === 'success') {
+            alert('Grades saved successfully!');
+            window.location.reload();
+        } else {
+            alert('Error: ' + result.message);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        alert('Error saving grades. Check the server console.');
+    });
+});
+</script>
+
+</body>
+</html>
