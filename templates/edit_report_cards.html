@@ -165,6 +165,51 @@
             color: white;
             margin-left: 10px;
         }
+
+        /* Student Search Styles */
+        .search-container {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1050;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #f8f9fa;
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .search-result-item:hover, .search-result-item.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -206,18 +251,19 @@
 
 <div class="main-content">
 
-    <!-- SELECTOR SECTION -->
-    <div class="card p-4 mb-4">
-        <form method="get" class="row g-3 align-items-end">
+    <div class="card p-4 mb-4 overflow-visible">
+        <form method="get" id="studentSearchForm" class="row g-3 align-items-end">
             <div class="col-md-7">
                 <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-person-circle me-1"></i> Select Student</label>
-                <select name="student_id" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="font-weight: 600;">
-                    {% for student in students %}
-                    <option value="{{ student.id }}" {% if selected_student.id == student.id %}selected{% endif %}>
-                        {{ student.first_name }} {{ student.last_name }} ({{ student.student_number }})
-                    </option>
-                    {% endfor %}
-                </select>
+                <div class="search-container">
+                    <input type="text" id="studentSearchInput" class="form-control border-0 bg-light shadow-none" 
+                           placeholder="Type student name..." autocomplete="off" 
+                           value="{{ selected_student.first_name }} {{ selected_student.last_name }}"
+                           style="font-weight: 600;">
+                    <input type="hidden" name="student_id" id="hiddenStudentId" value="{{ selected_student.id }}">
+                    <div id="searchResults" class="search-results"></div>
+                    <div id="studentNotFoundError" class="error-message">This student does not exist.</div>
+                </div>
             </div>
             <div class="col-md-5">
                 <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-clock-history me-1"></i> View Record For</label>
@@ -300,6 +346,100 @@
 </div>
 
 <script>
+// Student Search Data and Logic
+const studentsData = [
+    {% for student in students %}
+    {
+        id: "{{ student.id }}",
+        name: "{{ student.first_name|escapejs }} {{ student.last_name|escapejs }}",
+        number: "{{ student.student_number|escapejs }}"
+    },
+    {% endfor %}
+];
+
+const searchInput = document.getElementById('studentSearchInput');
+const searchResults = document.getElementById('searchResults');
+const hiddenStudentId = document.getElementById('hiddenStudentId');
+const searchForm = document.getElementById('studentSearchForm');
+const errorMsg = document.getElementById('studentNotFoundError');
+
+let selectedIndex = -1;
+let filteredStudents = [];
+
+searchInput.addEventListener('input', function() {
+    const query = this.value.toLowerCase().trim();
+    errorMsg.style.display = 'none';
+    
+    if (query.length === 0) {
+        searchResults.style.display = 'none';
+        return;
+    }
+
+    filteredStudents = studentsData.filter(student => 
+        student.name.toLowerCase().includes(query) || 
+        student.number.toLowerCase().includes(query)
+    );
+
+    renderResults();
+});
+
+function renderResults() {
+    if (filteredStudents.length === 0) {
+        searchResults.innerHTML = '<div class="p-3 text-muted small">No students found</div>';
+    } else {
+        searchResults.innerHTML = filteredStudents.map((student, index) => `
+            <div class="search-result-item ${index === selectedIndex ? 'active' : ''}" 
+                 onclick="selectStudent('${student.id}', '${student.name.replace(/'/g, "\\'")}')">
+                <div class="fw-bold">${student.name}</div>
+                <div class="small text-muted">${student.number}</div>
+            </div>
+        `).join('');
+    }
+    searchResults.style.display = 'block';
+}
+
+function selectStudent(id, name) {
+    searchInput.value = name;
+    hiddenStudentId.value = id;
+    searchResults.style.display = 'none';
+    searchForm.submit();
+}
+
+searchInput.addEventListener('keydown', function(e) {
+    if (e.key === 'ArrowDown') {
+        selectedIndex = Math.min(selectedIndex + 1, filteredStudents.length - 1);
+        renderResults();
+        e.preventDefault();
+    } else if (e.key === 'ArrowUp') {
+        selectedIndex = Math.max(selectedIndex - 1, 0);
+        renderResults();
+        e.preventDefault();
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < filteredStudents.length) {
+            selectStudent(filteredStudents[selectedIndex].id, filteredStudents[selectedIndex].name);
+        } else {
+            // Check if current input exactly matches a student
+            const query = searchInput.value.toLowerCase().trim();
+            const exactMatch = studentsData.find(s => s.name.toLowerCase() === query);
+            
+            if (exactMatch) {
+                selectStudent(exactMatch.id, exactMatch.name);
+            } else {
+                errorMsg.style.display = 'block';
+                searchResults.style.display = 'none';
+            }
+        }
+    }
+});
+
+// Close results when clicking outside
+document.addEventListener('click', function(e) {
+    if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+        searchResults.style.display = 'none';
+    }
+});
+
 document.getElementById('saveButton').addEventListener('click', function() {
     const rows = document.querySelectorAll('#gradeTable tbody tr');
     const data = [];
