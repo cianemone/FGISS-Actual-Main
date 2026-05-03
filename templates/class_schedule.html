@@ -125,6 +125,20 @@
             padding: 18px 25px;
             color: #444;
         }
+
+        .btn-pink {
+            background-color: #fb5bb2;
+            color: white;
+            border: none;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 6px;
+        }
+
+        .btn-pink:hover {
+            background-color: #e04a9e;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -136,7 +150,6 @@
     </div>
     <nav class="mt-4">
         {% if request.session.user_type == 'student' %}
-            <!-- Student Records for Student View -->
             <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
             <a class="nav-link" href="/report-cards/"><i class="bi bi-journal-text"></i> My Grades</a>
             <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
@@ -148,7 +161,6 @@
             <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
             {% endif %}
             
-            <!-- Student Records for Admin/Staff -->
             <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
@@ -159,7 +171,7 @@
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
-            <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
             <a class="nav-link active" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
             {% endif %}
         {% endif %}
@@ -181,32 +193,92 @@
             <h3 class="fw-bold mb-1">Class Schedule</h3>
             <p class="text-muted small mb-0">Academic Year 2025-2026</p>
         </div>
+        {% if is_admin_or_staff %}
+        <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#scheduleModal" onclick="resetForm()">
+            <i class="bi bi-plus-lg me-1"></i> Add Item
+        </button>
+        {% endif %}
     </div>
+
+    {% if is_admin_or_staff %}
+    <div class="card p-4 mb-4">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-5">
+                <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-mortarboard me-1"></i> Filter by Grade</label>
+                <select name="grade" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="font-weight: 600;">
+                    <option value="">All Grade Levels</option>
+                    {% for grade in grade_levels %}
+                    <option value="{{ grade }}" {% if current_grade == grade %}selected{% endif %}>{{ grade }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-5">
+                <label class="form-label small fw-bold text-muted text-uppercase"><i class="bi bi-filter-square me-1"></i> Filter by Section</label>
+                <select name="section" class="form-select border-0 bg-light shadow-none" onchange="this.form.submit()" style="font-weight: 600;">
+                    <option value="">All Sections</option>
+                    {% for sec in unique_sections %}
+                    <option value="{{ sec }}" {% if current_section == sec %}selected{% endif %}>{{ sec }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-2">
+                <a href="/class-schedule/" class="btn btn-outline-secondary w-100 border-0 bg-light shadow-none" style="font-weight: 600;">Clear All</a>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+
+    {% if user_type == 'student' %}
+    <div class="alert alert-info border-0 shadow-sm d-flex align-items-center mb-4">
+        <i class="bi bi-info-circle-fill me-3 fs-4"></i>
+        <div>
+            <h6 class="mb-0 fw-bold">My Current Schedule</h6>
+            <p class="mb-0 small">Viewing schedule for <strong>{{ student.grade_level|default:"N/A" }} - {{ student.section|default:"N/A" }}</strong></p>
+        </div>
+    </div>
+    {% endif %}
 
     <div class="card">
         <div class="table-responsive">
-            <table class="table">
+            <table class="table" id="scheduleTable">
                 <thead>
                     <tr>
-                        <th>Class Name</th>
+                        <th>Subject</th>
+                        <th>Class Name (Section)</th>
+                        <th>Grade</th>
                         <th>Teacher</th>
                         <th>Day</th>
                         <th>Time</th>
                         <th>Room</th>
+                        {% if is_admin_or_staff %}
+                        <th>Actions</th>
+                        {% endif %}
                     </tr>
                 </thead>
                 <tbody>
                     {% for schedule in schedules %}
                     <tr>
-                        <td class="fw-bold">{{ schedule.class_name }}</td>
-                        <td>{{ schedule.teacher.get_full_name|default:schedule.teacher.username|default:"TBA" }}</td>
+                        <td class="fw-bold">{{ schedule.subject.name }}</td>
+                        <td>{{ schedule.section|default:"-" }}</td>
+                        <td>{{ schedule.subject.grade_level }}</td>
+                        <td>{{ schedule.teacher_name|default:"TBA" }}</td>
                         <td>{{ schedule.day_of_week }}</td>
                         <td>{{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}</td>
                         <td>{{ schedule.room }}</td>
+                        {% if is_admin_or_staff %}
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="editSchedule({{ schedule.id }}, {{ schedule.subject.id }}, '{{ schedule.section|escapejs }}', '{{ schedule.teacher_name|escapejs }}', '{{ schedule.day_of_week|escapejs }}', '{{ schedule.start_time|time:'H:i' }}', '{{ schedule.end_time|time:'H:i' }}', '{{ schedule.room|escapejs }}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="deleteSchedule({{ schedule.id }})">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                        {% endif %}
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-muted">No class schedules found.</td>
+                        <td colspan="{% if is_admin_or_staff %}8{% else %}7{% endif %}" class="text-center py-4 text-muted">No schedules found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
@@ -214,6 +286,188 @@
         </div>
     </div>
 </div>
+
+<!-- Schedule Modal -->
+<div class="modal fade" id="scheduleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add Class Schedule</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="scheduleForm">
+                    <input type="hidden" id="scheduleId">
+                    <div class="mb-3">
+                        <label class="form-label">Subject <span class="text-danger">*</span></label>
+                        <select id="subjectId" class="form-select" required>
+                            <option value="">Select Subject</option>
+                            {% for subject in subjects %}
+                            <option value="{{ subject.id }}">{{ subject.name }} ({{ subject.grade_level }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Class Name / Section <span class="text-danger">*</span></label>
+                        <input type="text" id="section" class="form-control" placeholder="Type or select section..." list="sectionsList" required>
+                        <datalist id="sectionsList">
+                            {% for sec in unique_sections %}
+                            <option value="{{ sec }}">
+                            {% endfor %}
+                        </datalist>
+                        <small class="text-muted">You can select from the list or type a new section name.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teacher Name <span class="text-danger">*</span></label>
+                        <input type="text" id="teacherName" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Day of Week <span class="text-danger">*</span></label>
+                        <select id="dayOfWeek" class="form-select" required>
+                            <option value="Monday">Monday</option>
+                            <option value="Tuesday">Tuesday</option>
+                            <option value="Wednesday">Wednesday</option>
+                            <option value="Thursday">Thursday</option>
+                            <option value="Friday">Friday</option>
+                            <option value="Saturday">Saturday</option>
+                            <option value="Sunday">Sunday</option>
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Start Time <span class="text-danger">*</span></label>
+                            <input type="time" id="startTime" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">End Time <span class="text-danger">*</span></label>
+                            <input type="time" id="endTime" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Room</label>
+                        <input type="text" id="room" class="form-control" placeholder="e.g., Room 302">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-pink" onclick="saveSchedule()">Save Schedule</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Notice Modal -->
+<div class="modal fade" id="noticeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="noticeTitle">Notice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="noticeMessage"></div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
+    const noticeModal = new bootstrap.Modal(document.getElementById('noticeModal'));
+
+    function showNotice(title, message, reload = false) {
+        document.getElementById('noticeTitle').innerText = title;
+        document.getElementById('noticeMessage').innerText = message;
+        
+        if (reload) {
+            document.getElementById('noticeModal').addEventListener('hidden.bs.modal', function () {
+                window.location.reload();
+            }, { once: true });
+        }
+        
+        noticeModal.show();
+    }
+
+    function resetForm() {
+        document.getElementById('scheduleId').value = '';
+        document.getElementById('scheduleForm').reset();
+        document.getElementById('modalTitle').innerText = 'Add Class Schedule';
+    }
+
+    function editSchedule(id, subjectId, section, teacherName, dayOfWeek, startTime, endTime, room) {
+        document.getElementById('scheduleId').value = id;
+        document.getElementById('subjectId').value = subjectId;
+        document.getElementById('section').value = section;
+        document.getElementById('teacherName').value = teacherName;
+        document.getElementById('dayOfWeek').value = dayOfWeek;
+        document.getElementById('startTime').value = startTime;
+        document.getElementById('endTime').value = endTime;
+        document.getElementById('room').value = room;
+        document.getElementById('modalTitle').innerText = 'Edit Class Schedule';
+        scheduleModal.show();
+    }
+
+    function saveSchedule() {
+        const data = {
+            id: document.getElementById('scheduleId').value,
+            subject_id: document.getElementById('subjectId').value,
+            section: document.getElementById('section').value,
+            teacher_name: document.getElementById('teacherName').value,
+            day_of_week: document.getElementById('dayOfWeek').value,
+            start_time: document.getElementById('startTime').value,
+            end_time: document.getElementById('endTime').value,
+            room: document.getElementById('room').value
+        };
+
+        if (!data.subject_id || !data.section || !data.teacher_name || !data.start_time || !data.end_time) {
+            alert('Please fill in all required fields marked with *');
+            return;
+        }
+
+        fetch('/api/schedules/save/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'success') {
+                scheduleModal.hide();
+                showNotice('Success', result.message, true);
+            } else {
+                showNotice('Error', result.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotice('Error', 'An unexpected error occurred.');
+        });
+    }
+
+    function deleteSchedule(id) {
+        if (!confirm('Are you sure you want to delete this schedule?')) return;
+
+        fetch(`/api/schedules/delete/${id}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(result => {
+            if (result.status === 'success') {
+                showNotice('Success', result.message, true);
+            } else {
+                showNotice('Error', result.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            showNotice('Error', 'An unexpected error occurred.');
+        });
+    }
+</script>
 
 </body>
 </html>

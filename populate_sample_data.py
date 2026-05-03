@@ -13,36 +13,39 @@ def populate():
     # Create sample students based on your actual model fields
     students_data = [
         {
-            'student_number': '2025-0012',
+            'student_number': 'stu0001',
             'first_name': 'Maria',
             'last_name': 'Santos',
-            'email': 'maria@email.com',
+            'email': 'maria.santos@fgiss.edu',
             'phone_number': '09123456789',
             'dob': '2008-05-15',
             'date_of_enrollment': '2025-06-01',
-            'section': 'Grade 7-A',
+            'grade_level': 'Grade 1',
+            'section': '1-A',
             'is_active': True
         },
         {
-            'student_number': '2025-0015',
+            'student_number': 'stu0002',
             'first_name': 'John',
             'last_name': 'Reyes',
-            'email': 'john@email.com',
+            'email': 'john.reyes@fgiss.edu',
             'phone_number': '09123456788',
             'dob': '2008-03-20',
             'date_of_enrollment': '2025-06-01',
-            'section': 'Grade 7-A',
+            'grade_level': 'Grade 1',
+            'section': '1-A',
             'is_active': True
         },
         {
-            'student_number': '2025-0022',
+            'student_number': 'stu0003',
             'first_name': 'Clara',
             'last_name': 'Dizon',
-            'email': 'clara@email.com',
+            'email': 'clara.dizon@fgiss.edu',
             'phone_number': '09123456787',
             'dob': '2008-08-10',
             'date_of_enrollment': '2025-06-01',
-            'section': 'Grade 7-B',
+            'grade_level': 'Grade 2',
+            'section': '2-A',
             'is_active': True
         }
     ]

@@ -206,8 +206,9 @@
                                 <label for="student_number" class="form-label">Student Number <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control" id="student_number" 
                                        value="{{ student.student_number|default:'' }}"
+                                       placeholder="stu0001"
                                        {% if is_edit %}readonly{% endif %} required>
-                                <small class="text-muted">Unique identifier for the student</small>
+                                <small class="text-muted">Format: stu followed by 4 digits (e.g., stu0001)</small>
                                 <div id="student_number_error" class="error-message"></div>
                             </div>
                             
@@ -228,8 +229,9 @@
                             <div class="col-md-6 mb-3">
                                 <label for="email" class="form-label">Email Address</label>
                                 <input type="email" class="form-control" id="email" 
-                                       value="{{ student.email|default:'' }}">
-                                <small class="text-muted">Must be a valid email address</small>
+                                       value="{{ student.email|default:'' }}"
+                                       placeholder="name@fgiss.edu">
+                                <small class="text-muted">Must end with @fgiss.edu</small>
                                 <div id="email_error" class="error-message"></div>
                             </div>
                             
@@ -541,11 +543,23 @@
     // Add event listeners for validation
     document.getElementById('email').addEventListener('blur', function() {
         var email = this.value;
-        if (email && email.indexOf('@') === -1) {
-            document.getElementById('email_error').innerHTML = 'Please enter a valid email address.';
+        if (email && !email.endsWith('@fgiss.edu')) {
+            document.getElementById('email_error').innerHTML = 'Email must end with @fgiss.edu';
             this.classList.add('error-field');
         } else {
             document.getElementById('email_error').innerHTML = '';
+            this.classList.remove('error-field');
+        }
+    });
+
+    document.getElementById('student_number').addEventListener('blur', function() {
+        var sn = this.value;
+        var snRegex = /^stu\d{4}$/;
+        if (sn && !snRegex.test(sn)) {
+            document.getElementById('student_number_error').innerHTML = 'Format must be stuXXXX (e.g., stu0001)';
+            this.classList.add('error-field');
+        } else {
+            document.getElementById('student_number_error').innerHTML = '';
             this.classList.remove('error-field');
         }
     });

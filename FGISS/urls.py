@@ -25,7 +25,7 @@ urlpatterns = [
     path("save-intervention-plan/", save_intervention_plan, name="save-intervention-plan"),
     path("delete-intervention-plan/<int:student_id>/", delete_intervention_plan, name="delete-intervention-plan"),
     path("course-syllabus/", course_syllabus_view, name="course-syllabus"),
-    path("exam-schedule/", exam_schedule_view, name="exam-schedule"),
+    path("exam-schedule/", include("ExamSchedules.urls")),
     path("class-schedule/", class_schedule_view, name="class-schedule"),
     path("api/health/", other_views.HealthCheck.as_view(), name="health"),
     path("api/users/", include("UsersANDuserRoles.urls")),

@@ -232,9 +232,9 @@
         <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
         {% endif %}
        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
         <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
-        <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
         <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
         {% endif %}
        
@@ -345,7 +345,65 @@
     </div>
 </div>
 
+<!-- Notice Modal -->
+<div class="modal fade" id="noticeModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="noticeModalTitle">Notice</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="noticeModalBody">
+        <!-- Message will be inserted here -->
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+// Helper to show modal
+function showNotice(title, message) {
+    document.getElementById('noticeModalTitle').innerText = title;
+    document.getElementById('noticeModalBody').innerText = message;
+    var myModal = new bootstrap.Modal(document.getElementById('noticeModal'));
+    myModal.show();
+}
+
+// Real-time validation for grade inputs
+document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('editable-cell')) {
+        const val = e.target.innerText.trim();
+        if (val !== '' && val !== '-' && isNaN(Number(val))) {
+            e.target.dataset.invalid = "true";
+            showNotice('Error', 'Letters are not allowed. Only numbers can be inputed for report cards.');
+        }
+    }
+});
+
+// Clear invalid cells when notice is closed
+document.addEventListener('DOMContentLoaded', function() {
+    const noticeModal = document.getElementById('noticeModal');
+    if (noticeModal) {
+        noticeModal.addEventListener('hidden.bs.modal', function () {
+            document.querySelectorAll('.editable-cell[data-invalid="true"]').forEach(cell => {
+                cell.innerText = '';
+                delete cell.dataset.invalid;
+            });
+        });
+    }
+});
+
+// Show modal if no grades found on load
+{% if selected_student and not grades %}
+document.addEventListener('DOMContentLoaded', function() {
+    showNotice('Notice', 'No subject records found for {{ current_view_level }}. Run your sync script to populate subjects for this grade.');
+});
+{% endif %}
+
 // Student Search Data and Logic
 const studentsData = [
     {% for student in students %}
@@ -443,20 +501,40 @@ document.addEventListener('click', function(e) {
 document.getElementById('saveButton').addEventListener('click', function() {
     const rows = document.querySelectorAll('#gradeTable tbody tr');
     const data = [];
+    let hasInvalidInput = false;
 
     rows.forEach(row => {
         const cells = row.querySelectorAll('td');
         if (cells.length > 1) { 
+            const q1 = cells[1].innerText.trim();
+            const q2 = cells[2].innerText.trim();
+            const q3 = cells[3].innerText.trim();
+            const q4 = cells[4].innerText.trim();
+
+            // Validate inputs
+            [cells[1], cells[2], cells[3], cells[4]].forEach(cell => {
+                const val = cell.innerText.trim();
+                if (val !== '' && val !== '-' && isNaN(Number(val))) {
+                    hasInvalidInput = true;
+                    cell.dataset.invalid = "true";
+                }
+            });
+
             data.push({
                 grade_id: row.getAttribute('data-grade-id'),
                 subject_id: row.getAttribute('data-subject-id'),
-                q1: cells[1].innerText.trim(),
-                q2: cells[2].innerText.trim(),
-                q3: cells[3].innerText.trim(),
-                q4: cells[4].innerText.trim()
+                q1: q1,
+                q2: q2,
+                q3: q3,
+                q4: q4
             });
         }
     });
+
+    if (hasInvalidInput) {
+        showNotice('Error', 'Letters are not allowed. Only numbers can be inputed for report cards.');
+        return;
+    }
 
     fetch(window.location.href, {
         method: 'POST',
@@ -473,15 +551,18 @@ document.getElementById('saveButton').addEventListener('click', function() {
     .then(response => response.json())
     .then(result => {
         if(result.status === 'success') {
-            alert('Grades saved successfully!');
-            window.location.reload();
+            showNotice('Success', 'Grades saved successfully!');
+            // Page will reload when user closes the modal
+            document.getElementById('noticeModal').addEventListener('hidden.bs.modal', function () {
+                window.location.reload();
+            }, { once: true });
         } else {
-            alert('Error: ' + result.message);
+            showNotice('Error', result.message);
         }
     })
     .catch(err => {
         console.error(err);
-        alert('Error saving grades. Check the server console.');
+        showNotice('Error', 'Error saving grades. Check the server console.');
     });
 });
 </script>

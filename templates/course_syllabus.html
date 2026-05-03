@@ -189,7 +189,7 @@
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a class="nav-link active" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
-            <a class="nav-link" href="/exam-schedule/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
             <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
             {% endif %}
         {% endif %}

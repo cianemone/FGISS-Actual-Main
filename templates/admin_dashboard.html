@@ -194,7 +194,7 @@
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a href="/course-syllabus/" class="nav-link"><i class="bi bi-book"></i> Course Syllabi</a>
-            <a href="/exam-schedule/" class="nav-link"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a href="/exam-schedule/edit/" class="nav-link"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
             <a href="/class-schedule/" class="nav-link"><i class="bi bi-calendar3"></i> Class Schedule</a>
             {% endif %}
             
@@ -269,7 +269,7 @@
                 </div>
 
                 <div class="col-md-4">
-                    <a href="/exam-schedule/" class="dashboard-card">
+                    <a href="/exam-schedule/edit/" class="dashboard-card">
                         <div>
                             <i class="bi bi-calendar-event"></i>
                             <span>Exam Schedules</span>

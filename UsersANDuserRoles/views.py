@@ -12,35 +12,13 @@ from django.contrib import messages  # Add this import
 
 from StudentRecords.models import Student
 
-# Valid student accounts 
-VALID_STUDENTS = {
-    'juan@student.com': 'pass123',
-    'maria@student.com': 'pass123',
-    'carlos@student.com': 'pass123',
-    'john@email.com': 'hashed_pw_1',
-    'maria@email.com': 'hashed_pw_2',
-    'clara@email.com': 'hashed_pw_3',
-}
-
-# FIXED: Added roles to the mock data to prevent privilege escalation
-VALID_STAFF = {
-    'teacher1@school.com': {'password': 'pass123', 'role': 'staff'},
-    'admin@school.com': {'password': 'pass123', 'role': 'admin'},
-    'counselor@school.com': {'password': 'pass123', 'role': 'guidance'},
-    'coordinator@school.com': {'password': 'pass123', 'role': 'coordinator'},
-    'mr.cruz@email.com': {'password': 'hashed_pw_staff1', 'role': 'staff'},
-    'ms.reyes@email.com': {'password': 'hashed_pw_staff2', 'role': 'staff'},
-    'mr.santos@email.com': {'password': 'hashed_pw_staff3', 'role': 'staff'},
-    'admin.staff@email.com': {'password': 'hashed_pw_staff4', 'role': 'admin'},
-}
-
 @csrf_protect
 def login_check_view(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
         password = request.POST.get('password')
         
-        # 1. Try database-level authentication first
+        # Authenticate using database-level users
         user = User.objects.filter(email=email).first()
         if user and user.check_password(password):
             profile = getattr(user, 'profile', None)
@@ -50,8 +28,8 @@ def login_check_view(request):
                 # Determine user_type based on database role
                 user_type = 'student'
                 if role_name == 'admin': user_type = 'admin'
-                elif role_name == 'teacher': user_type = 'staff'
-                elif role_name == 'guidance counselor': user_type = 'guidance'
+                elif 'teacher' in role_name or 'staff' in role_name: user_type = 'staff'
+                elif 'guidance' in role_name: user_type = 'guidance'
                 elif role_name == 'coordinator': user_type = 'coordinator'
                 
                 request.session['user_email'] = email
@@ -63,42 +41,11 @@ def login_check_view(request):
                     student = Student.objects.filter(email=email).first()
                     if student:
                         request.session['student_id'] = student.id
-                    # CHANGE THIS - Redirect to student dashboard instead of report-cards
                     return JsonResponse({'success': True, 'redirect_url': '/student/dashboard/'})
                 elif user_type == 'guidance':
                     return JsonResponse({'success': True, 'redirect_url': '/intervention-plan/'})
                 else:
                     return JsonResponse({'success': True, 'redirect_url': '/edit-report-cards/'})
-
-        # 2. Fallback to hardcoded dicts for existing dummy data
-        # Detect role from email domain or specific email for hardcoded data
-        detected_role = None
-        if email in VALID_STUDENTS:
-            detected_role = 'student'
-        elif email in VALID_STAFF:
-            detected_role = VALID_STAFF[email]['role']
-            
-        if detected_role == 'student':
-            if VALID_STUDENTS.get(email) == password:
-                request.session['user_email'] = email
-                request.session['user_type'] = 'student'
-                student = Student.objects.filter(email=email).first()
-                if student:
-                    request.session['student_id'] = student.id
-                # CHANGE THIS - Redirect to student dashboard
-                return JsonResponse({'success': True, 'redirect_url': '/student/dashboard/'})
-                
-        elif detected_role in ['staff', 'admin', 'coordinator', 'guidance']:
-            staff_record = VALID_STAFF[email]
-            if staff_record['password'] == password:
-                request.session['user_email'] = email
-                request.session['user_type'] = detected_role
-                
-                if detected_role == 'admin':
-                    return JsonResponse({'success': True, 'redirect_url': '/admin-dashboard/'})
-                elif detected_role == 'guidance':
-                    return JsonResponse({'success': True, 'redirect_url': '/intervention-plan/'})
-                return JsonResponse({'success': True, 'redirect_url': '/edit-report-cards/'})
 
         return JsonResponse({'success': False, 'message': 'Invalid email or password.'})
     

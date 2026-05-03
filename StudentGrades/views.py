@@ -67,11 +67,16 @@ def edit_report_cards_view(request):
                 
                 for term, score in quarters.items():
                     if score != '' and score != '-':
+                        try:
+                            score_val = float(score)
+                        except ValueError:
+                            return JsonResponse({'status': 'error', 'message': 'Letters are not allowed. Only numbers can be inputed for report cards.'}, status=400)
+                        
                         Grade.objects.update_or_create(
                             student=selected_student,
                             subject=subject_obj,
                             term=term,
-                            defaults={'score': float(score)}
+                            defaults={'score': score_val}
                         )
             return JsonResponse({'status': 'success'})
         except Exception as e:
