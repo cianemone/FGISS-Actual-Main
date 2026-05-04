@@ -222,8 +222,8 @@
     <nav class="mt-4">
         {% if request.session.user_type == 'admin' %}
         <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
         <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
         {% endif %}
         
         <a class="nav-link active" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>

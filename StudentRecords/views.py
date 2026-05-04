@@ -231,7 +231,11 @@ def student_detail_view(request, student_number):
         is_active=True
     ).exclude(student_number=student.student_number)[:5] if student.section else []
     
-    return render(request, 'student_detail.html', {
+    template_name = 'student_detail.html'
+    if user_type == 'student':
+        template_name = 'view_student_details.html'
+    
+    return render(request, template_name, {
         'student': student,
         'same_section_students': same_section_students,
         'is_owner': is_owner,

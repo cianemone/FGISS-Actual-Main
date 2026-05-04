@@ -4,7 +4,7 @@ from django.views.generic import TemplateView
 from rest_framework import routers
 from Otherstuff import views as other_views
 from StudentGrades.views import report_cards_view, edit_report_cards_view
-from UsersANDuserRoles.views import login_check_view, logout_view, admin_dashboard_view, user_roles_view, create_user_view
+from UsersANDuserRoles.views import login_check_view, logout_view, admin_dashboard_view, user_roles_view, create_user_view, delete_user_view
 from StudentBehaviour.views import intervention_plan_view, save_intervention_plan, delete_intervention_plan
 from CourseSyllabi.views import course_syllabus_view
 from ExamSchedules.views import exam_schedule_view
@@ -18,6 +18,7 @@ urlpatterns = [
     path("admin-dashboard/", admin_dashboard_view, name="admin-dashboard"),
     path("user-roles/", user_roles_view, name="user-roles"),
     path("create-user/", create_user_view, name="create-user"),
+    path("delete-user/<int:user_id>/", delete_user_view, name="delete-user"),
     path("admin/", admin.site.urls),
     path("report-cards/", report_cards_view, name="top-report-cards"),
     path("edit-report-cards/", edit_report_cards_view, name="edit-report-cards"),

@@ -188,6 +188,32 @@ def create_user_view(request):
             
     return JsonResponse({'success': False, 'message': 'Invalid request method.'})
 
+@csrf_exempt
+def delete_user_view(request, user_id):
+    if request.method == 'POST':
+        # Check if user has permission (admin)
+        if request.session.get('user_type') != 'admin':
+            return JsonResponse({'success': False, 'message': 'Access denied.'})
+            
+        try:
+            with transaction.atomic():
+                user = get_object_or_404(User, id=user_id)
+                email = user.email
+                
+                # If it's a student, also delete the Student record
+                # We need to import Student inside if it's not at top level or use the already imported one
+                from StudentRecords.models import Student
+                Student.objects.filter(email=email).delete()
+                
+                # Delete the user (this will also delete the profile due to CASCADE)
+                user.delete()
+                
+                return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)})
+            
+    return JsonResponse({'success': False, 'message': 'Invalid request method.'})
+
 def logout_view(request):
     request.session.flush()
     return redirect('login')

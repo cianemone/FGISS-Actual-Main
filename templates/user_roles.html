@@ -194,12 +194,13 @@
             <a href="/admin-dashboard/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
             {% endif %}
             
-            <!-- Student Records Link - Added -->
-            <a href="{% url 'student_list' %}" class="nav-link"><i class="bi bi-people-fill"></i> Student Records</a>
-            
             {% if request.session.user_type == 'admin' %}
             <a href="/user-roles/" class="nav-link active"><i class="bi bi-people"></i> Users and Roles</a>
             {% endif %}
+
+            <!-- Student Records Link - Added -->
+            <a href="{% url 'student_list' %}" class="nav-link"><i class="bi bi-people-fill"></i> Student Records</a>
+            
 
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a href="/edit-report-cards/" class="nav-link"><i class="bi bi-journal-text"></i> Student Grades</a>
@@ -242,11 +243,12 @@
                         <th>Name</th>
                         <th>Email Address</th>
                         <th>Assigned Role</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for user in db_users %}
-                    <tr>
+                    <tr id="user-row-{{ user.id }}">
                         <td>{{ user.get_full_name|default:user.username }}</td>
                         <td>{{ user.email }}</td>
                         <td>
@@ -261,6 +263,11 @@
                                 {{ user.profile.role.name|default:"Student" }}
                             </span>
                             {% endwith %}
+                        </td>
+                        <td>
+                            <button class="btn btn-sm btn-danger" onclick="deleteUser({{ user.id }}, '{{ user.get_full_name|default:user.username }}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -368,20 +375,11 @@
                     
                     // Create new row
                     const tableBody = document.querySelector('#userTable tbody');
-                    const newRow = document.createElement('tr');
-                    newRow.innerHTML = `
-                        <td>${name}</td>
-                        <td>${email}</td>
-                        <td><span class="role-badge ${roleClass}">${role}</span></td>
-                    `;
-                    
-                    // Prepend new row to table
-                    tableBody.prepend(newRow);
-                    
-                    // Close modal and reset form
-                    const modal = bootstrap.Modal.getInstance(document.getElementById('createUserModal'));
-                    modal.hide();
-                    document.getElementById('createUserForm').reset();
+                    // We don't have the user ID from the response yet in the current view, 
+                    // but we can either reload or just hide the delete button for now.
+                    // Actually, let's just reload the page for simplicity or assume success.
+                    // Better: Update view to return the ID.
+                    location.reload(); 
                 } else {
                     errorDiv.textContent = data.message || 'Error creating user.';
                     errorDiv.classList.remove('d-none');
@@ -397,6 +395,30 @@
                 submitBtn.innerHTML = 'Add User';
             });
         });
+
+        function deleteUser(userId, userName) {
+            if (confirm(`Are you sure you want to delete user "${userName}"?`)) {
+                fetch(`/delete-user/${userId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const row = document.getElementById(`user-row-${userId}`);
+                        if (row) row.remove();
+                    } else {
+                        alert('Error deleting user: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('An unexpected error occurred.');
+                });
+            }
+        }
     </script>
 </body>
 </html>
