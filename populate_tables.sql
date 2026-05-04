@@ -72,14 +72,14 @@ INSERT INTO ROLE VALUES
 (5,'Guidance Counselor');
 
 INSERT INTO STUDENT VALUES
-(1001,'Juan Dela Cruz','juan@student.com','pass123',1),
-(1002,'Maria Santos','maria@student.com','pass123',1),
-(1003,'Carlos Reyes','carlos@student.com','pass123',1);
+(1001,'Juan Dela Cruz','juan@fgiss.edu','pass123',1),
+(1002,'Maria Santos','maria@fgiss.edu','pass123',1),
+(1003,'Carlos Reyes','carlos@fgiss.edu','pass123',1);
 
 INSERT INTO STAFF VALUES
-(2001,'Mathematics','pass123','teacher1@school.com',3),
-(2002,'Administration','pass123','admin@school.com',2),
-(2003,'Guidance','pass123','counselor@school.com',5);
+(2001,'Mathematics','pass123','teacher1@fgiss.edu',3),
+(2002,'Administration','pass123','admin@fgiss.edu',2),
+(2003,'Guidance','pass123','counselor@fgiss.edu',5);
 
 INSERT INTO SUBJECT VALUES
 (3001,'Mathematics 1','MATH101'),

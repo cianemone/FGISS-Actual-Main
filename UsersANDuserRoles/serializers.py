@@ -7,6 +7,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ("id", "username", "first_name", "last_name", "email")
 
+    def validate_email(self, value):
+        if value and not value.endswith('@fgiss.edu'):
+            raise serializers.ValidationError("Email must end with @fgiss.edu")
+        return value
+
 class RoleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Role

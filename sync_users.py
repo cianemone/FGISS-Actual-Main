@@ -79,9 +79,9 @@ def sync():
     print("Subjects synced successfully.")
 
     students_data = [
-        ('Juan Dela Cruz', 'juan@student', 'pass123', 1, 'Grade 1'),
-        ('Maria Santos', 'maria@student', 'pass123', 1, 'Grade 4'),
-        ('Carlos Reyes', 'carlos@student', 'pass123', 1, 'Grade 6'),
+        ('Juan Dela Cruz', 'juan@fgiss.edu', 'pass123', 1, 'Grade 1'),
+        ('Maria Santos', 'maria@fgiss.edu', 'pass123', 1, 'Grade 4'),
+        ('Carlos Reyes', 'carlos@fgiss.edu', 'pass123', 1, 'Grade 6'),
     ]
 
     for full_name, email, password, role_id, g_level in students_data:
@@ -105,17 +105,17 @@ def sync():
             defaults={
                 'first_name': first_name,
                 'last_name': last_name,
-                'student_number': f"STU{user.id:04d}",
+                'student_number': f"stu{user.id:04d}",
                 'grade_level': g_level 
             }
         )
         print(f"Synced student: {email} to {g_level}")
 
     staff_data = [
-        ('Mathematics Teacher', 'teacher1@staff', 'pass123', 3),
-        ('Administration', 'admin@admin', 'pass123', 2),
-        ('Guidance Counselor', 'counselor@guidance', 'pass123', 5),
-        ('Coordinator User', 'coordinator@coordinator', 'pass123', 4),
+        ('Mathematics Teacher', 'teacher1@fgiss.edu', 'pass123', 3),
+        ('Administration', 'admin@fgiss.edu', 'pass123', 2),
+        ('Guidance Counselor', 'counselor@fgiss.edu', 'pass123', 5),
+        ('Coordinator User', 'coordinator@fgiss.edu', 'pass123', 4),
     ]
 
     for full_name, email, password, role_id in staff_data:

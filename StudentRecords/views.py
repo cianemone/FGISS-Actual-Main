@@ -146,6 +146,10 @@ def student_form_view(request):
     if request.method == "POST" and request.headers.get('x-requested-with') == 'XMLHttpRequest':
         try:
             data = json.loads(request.body)
+            email = data.get('email')
+            if email and '@' not in email:
+                email = f"{email}@fgiss.edu"
+                data['email'] = email
             
             if student_number:
                 # Update existing student
@@ -270,6 +274,9 @@ def student_self_edit_view(request):
         # Get editable fields
         phone_number = request.POST.get('phone_number')
         email = request.POST.get('email')
+        if email and '@' not in email:
+            email = f"{email}@fgiss.edu"
+        
         address = request.POST.get('address')
         emergency_contact_name = request.POST.get('emergency_contact_name')
         emergency_contact_phone = request.POST.get('emergency_contact_phone')

@@ -19,9 +19,13 @@ def exam_schedule_view(request):
     # For now, just show all exams or generic list as requested
     exams = ExamSchedule.objects.all().order_by('date', 'start_time')
     
+    from StudentRecords.models import Student
+    student = Student.objects.filter(email=request.session.get('user_email')).first()
+    
     return render(request, 'exam_schedule.html', {
         'exams': exams,
-        'user_email': request.session.get('user_email')
+        'user_email': request.session.get('user_email'),
+        'student': student
     })
 
 def edit_exam_schedule_view(request):

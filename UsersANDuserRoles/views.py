@@ -16,6 +16,9 @@ from StudentRecords.models import Student
 def login_check_view(request):
     if request.method == 'POST':
         email = request.POST.get('email', '').strip().lower()
+        if not email.endswith('@fgiss.edu'):
+            return JsonResponse({'success': False, 'message': 'Please use your full @fgiss.edu email address to log in.'})
+        
         password = request.POST.get('password')
         
         # Authenticate using database-level users
@@ -111,7 +114,7 @@ def student_dashboard_view(request):
         name_part = user_email.split('@')[0]
         
         student = Student.objects.create(
-            student_number=f"STU{User.objects.filter(email=user_email).first().id if User.objects.filter(email=user_email).first() else 1001}",
+            student_number=f"stu{User.objects.filter(email=user_email).first().id if User.objects.filter(email=user_email).first() else 1001}",
             first_name=name_part.capitalize(),
             last_name="Student",
             email=user_email,
@@ -137,21 +140,19 @@ def create_user_view(request):
                 return JsonResponse({'success': False, 'message': 'All fields are required.'})
                 
             with transaction.atomic():
-                # Append role-based domain if not present
-                domain_map = {
-                    'student': '@student',
-                    'admin': '@admin',
-                    'teacher': '@staff',
-                    'guidance counselor': '@guidance',
-                    'coordinator': '@coordinator'
-                }
+                # Use @fgiss.edu for all users
+                target_domain = '@fgiss.edu'
                 
-                target_domain = domain_map.get(role_name.lower(), '@user')
                 if '@' not in email:
                     full_email = f"{email}{target_domain}"
                 else:
-                    # If they typed an email, we ensure it has the right suffix or keep as is
-                    full_email = email
+                    # If they typed an email, ensure it ends with @fgiss.edu
+                    if not email.endswith(target_domain):
+                        # Optionally force it or return error. Let's force it for consistency if it's missing the domain
+                        prefix = email.split('@')[0]
+                        full_email = f"{prefix}{target_domain}"
+                    else:
+                        full_email = email
 
                 if User.objects.filter(username=full_email).exists() or User.objects.filter(email=full_email).exists():
                     return JsonResponse({'success': False, 'message': 'User with this email already exists.'})
@@ -177,8 +178,8 @@ def create_user_view(request):
                     Student.objects.create(
                         first_name=user.first_name,
                         last_name=user.last_name,
-                        email=email,
-                        student_number=f"STU{user.id:04d}" # Generate a dummy student number
+                        email=full_email,
+                        student_number=f"stu{user.id:04d}" # Generate a dummy student number
                     )
             
             return JsonResponse({'success': True})
