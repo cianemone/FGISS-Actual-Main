@@ -14,6 +14,7 @@ from .serializers import StudentSerializer
 class StudentViewSet(viewsets.ModelViewSet):
     queryset = Student.objects.all().order_by('section', 'last_name', 'first_name')
     serializer_class = StudentSerializer
+    lookup_field = 'student_number'
     
     @action(detail=False, methods=['get'])
     def search(self, request):
