@@ -292,7 +292,7 @@
                                 <tr>
                                     <td><strong>{{ student.student_number }}</strong></td>
                                     <td>{{ student.first_name }} {{ student.last_name }}</td>
-                                    <td>{{ student.section|default:"—" }}</td>
+                                    <td>{{ student.grade_level }}-{{ student.section|default:"—" }}</td>
                                     <td>{{ student.email|default:"—" }}</td>
                                     <td>{{ student.phone_number|default:"—" }}</td>
                                     <td>

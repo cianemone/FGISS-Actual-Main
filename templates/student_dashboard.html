@@ -131,7 +131,7 @@
             <div class="card mb-4">
                 <div class="card-body">
                     <h3>Welcome, {{ student.first_name }}!</h3>
-                    <p class="text-muted">Student ID: {{ student.student_number }} | Section: {{ student.section|default:"Not assigned" }}</p>
+                    <p class="text-muted">Student ID: {{ student.student_number }} | Section: {{ student.grade_level }}-{{ student.section|default:"Not assigned" }}</p>
                 </div>
             </div>
 
@@ -196,7 +196,7 @@
                             <h6><i class="bi bi-graph-up"></i> Academic Summary</h6>
                             <hr>
                             <p><strong>Grade Level:</strong> {{ student.grade_level|default:"Not assigned" }}</p>
-                            <p><strong>Section:</strong> {{ student.section|default:"Not assigned" }}</p>
+                            <p><strong>Section:</strong> {{ student.grade_level }}-{{ student.section|default:"Not assigned" }}</p>
                             <a href="/report-cards/" class="btn btn-sm btn-outline-pink">View My Grades</a>
                         </div>
                     </div>

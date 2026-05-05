@@ -263,7 +263,7 @@
         <i class="bi bi-info-circle-fill me-3 fs-4"></i>
         <div>
             <h6 class="mb-0 fw-bold">My Current Schedule</h6>
-            <p class="mb-0 small">Viewing schedule for <strong>{{ student.grade_level|default:"N/A" }} - {{ student.section|default:"N/A" }}</strong></p>
+            <p class="mb-0 small">Viewing schedule for <strong>{{ student.grade_level|default:"N/A" }}-{{ student.section|default:"N/A" }}</strong></p>
         </div>
     </div>
     {% endif %}
@@ -390,14 +390,17 @@
 <!-- Notice Modal -->
 <div class="modal fade" id="noticeModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="noticeTitle">Notice</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0" id="noticeHeader">
+        <h5 class="modal-title fw-bold text-white" id="noticeTitle">Notice</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body" id="noticeMessage"></div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      <div class="modal-body py-4 text-center">
+        <i id="noticeIcon" class="bi mb-3 d-block" style="font-size: 3rem;"></i>
+        <div id="noticeMessage" class="fs-5"></div>
+      </div>
+      <div class="modal-footer border-0 justify-content-center pb-4">
+        <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
@@ -408,9 +411,20 @@
     const scheduleModal = new bootstrap.Modal(document.getElementById('scheduleModal'));
     const noticeModal = new bootstrap.Modal(document.getElementById('noticeModal'));
 
-    function showNotice(title, message, reload = false) {
+    function showNotice(title, message, isSuccess = false, reload = false) {
+        const header = document.getElementById('noticeHeader');
+        const icon = document.getElementById('noticeIcon');
+        
         document.getElementById('noticeTitle').innerText = title;
         document.getElementById('noticeMessage').innerText = message;
+        
+        if (isSuccess) {
+            header.className = 'modal-header border-0 bg-success';
+            icon.className = 'bi bi-check-circle-fill text-success mb-3 d-block';
+        } else {
+            header.className = 'modal-header border-0 bg-danger';
+            icon.className = 'bi bi-exclamation-triangle-fill text-danger mb-3 d-block';
+        }
         
         if (reload) {
             document.getElementById('noticeModal').addEventListener('hidden.bs.modal', function () {
@@ -466,14 +480,14 @@
         .then(result => {
             if (result.status === 'success') {
                 scheduleModal.hide();
-                showNotice('Success', result.message, true);
+                showNotice('Success', result.message, true, true);
             } else {
-                showNotice('Error', result.message);
+                showNotice('Conflict Detected', result.message, false);
             }
         })
         .catch(err => {
             console.error(err);
-            showNotice('Error', 'An unexpected error occurred.');
+            showNotice('Error', 'An unexpected error occurred.', false);
         });
     }
 
@@ -487,14 +501,14 @@
         .then(response => response.json())
         .then(result => {
             if (result.status === 'success') {
-                showNotice('Success', result.message, true);
+                showNotice('Success', result.message, true, true);
             } else {
-                showNotice('Error', result.message);
+                showNotice('Error', result.message, false);
             }
         })
         .catch(err => {
             console.error(err);
-            showNotice('Error', 'An unexpected error occurred.');
+            showNotice('Error', 'An unexpected error occurred.', false);
         });
     }
 </script>

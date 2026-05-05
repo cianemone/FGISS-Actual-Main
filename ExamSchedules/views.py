@@ -8,6 +8,7 @@ from ExamCoverage.models import ExamCoverage
 from CourseSyllabi.models import Syllabus
 from django.views.decorators.csrf import csrf_exempt
 import json
+from datetime import datetime
 
 def exam_schedule_view(request):
     """Student view-only exam schedule"""
@@ -15,12 +16,16 @@ def exam_schedule_view(request):
     if user_type != 'student':
         return redirect('login')
     
-    # Optional: Filter by student's grade/section if we want consistency with Class Schedule
-    # For now, just show all exams or generic list as requested
-    exams = ExamSchedule.objects.all().order_by('date', 'start_time')
-    
     from StudentRecords.models import Student
     student = Student.objects.filter(email=request.session.get('user_email')).first()
+    
+    if student and student.grade_level and student.section:
+        exams = ExamSchedule.objects.filter(
+            class_schedule__subject__grade_level=student.grade_level,
+            class_schedule__section=student.section
+        ).order_by('date', 'start_time')
+    else:
+        exams = ExamSchedule.objects.none()
     
     return render(request, 'exam_schedule.html', {
         'exams': exams,
@@ -54,20 +59,102 @@ def save_exam_schedule(request):
             data = json.loads(request.body)
             exam_id = data.get('id')
             
+            name = data.get('name')
+            date_str = data.get('date')
+            start_time_str = data.get('start_time')
+            end_time_str = data.get('end_time')
+            room = data.get('room')
+
+            if not all([name, date_str, start_time_str, end_time_str]):
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields.'})
+
+            # Check for conflicts with other ExamSchedules
+            from django.db.models import Q
+            
+            class_sched_id = data.get('class_schedule_id')
+            linked_class = None
+            if class_sched_id:
+                linked_class = get_object_or_404(ClassSchedule, id=class_sched_id)
+
+            # Base conflict query: same date and overlapping time
+            base_conflict_query = Q(
+                date=date_str,
+                start_time__lt=end_time_str,
+                end_time__gt=start_time_str
+            )
+            
+            # Conflict filters
+            conflict_filters = Q()
+            if room:
+                conflict_filters |= Q(room=room)
+            if linked_class and linked_class.section:
+                conflict_filters |= Q(class_schedule__section=linked_class.section)
+            
+            exam_conflicts = ExamSchedule.objects.filter(base_conflict_query & conflict_filters)
+            if exam_id:
+                exam_conflicts = exam_conflicts.exclude(id=exam_id)
+            
+            if exam_conflicts.exists():
+                conflict = exam_conflicts.first()
+                conflict_type = ""
+                if room and conflict.room == room:
+                    conflict_type = f"Room {room} is already booked for another exam"
+                elif linked_class and conflict.class_schedule and conflict.class_schedule.section == linked_class.section:
+                    conflict_type = f"Section {linked_class.section} already has another exam"
+                
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f"Conflict: {conflict_type} '{conflict.name}' from {conflict.start_time} to {conflict.end_time} on {conflict.date}."
+                })
+
+            # Check for conflicts with ClassSchedules
+            # Need to get day of week from date
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d')
+            day_of_week = date_obj.strftime('%A')
+            
+            class_conflict_filters = Q()
+            if room:
+                class_conflict_filters |= Q(room=room)
+            if linked_class and linked_class.section:
+                class_conflict_filters |= Q(section=linked_class.section)
+            if linked_class and linked_class.teacher_name:
+                class_conflict_filters |= Q(teacher_name=linked_class.teacher_name)
+                
+            class_conflicts = ClassSchedule.objects.filter(
+                day_of_week=day_of_week,
+                start_time__lt=end_time_str,
+                end_time__gt=start_time_str
+            ).filter(class_conflict_filters)
+            
+            if class_conflicts.exists():
+                conflict = class_conflicts.first()
+                conflict_type = ""
+                if room and conflict.room == room:
+                    conflict_type = f"Room {room} has a regular class"
+                elif linked_class and conflict.section == linked_class.section:
+                    conflict_type = f"Section {linked_class.section} has a regular class"
+                elif linked_class and conflict.teacher_name == linked_class.teacher_name:
+                    conflict_type = f"Teacher {linked_class.teacher_name} has a regular class"
+                    
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f"Conflict: {conflict_type} '{conflict.subject.name if conflict.subject else 'Unnamed'}' on {day_of_week}s from {conflict.start_time} to {conflict.end_time}."
+                })
+
             if exam_id:
                 exam = get_object_or_404(ExamSchedule, id=exam_id)
             else:
                 exam = ExamSchedule()
             
-            exam.name = data.get('name')
+            exam.name = name
             class_sched_id = data.get('class_schedule_id')
             if class_sched_id:
                 exam.class_schedule = get_object_or_404(ClassSchedule, id=class_sched_id)
             
-            exam.date = data.get('date')
-            exam.start_time = data.get('start_time')
-            exam.end_time = data.get('end_time')
-            exam.room = data.get('room')
+            exam.date = date_str
+            exam.start_time = start_time_str
+            exam.end_time = end_time_str
+            exam.room = room
             exam.save()
 
             # Handle Exam Coverage

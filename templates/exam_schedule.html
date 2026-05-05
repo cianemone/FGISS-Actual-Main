@@ -215,7 +215,7 @@
                     <tr>
                         <td class="fw-bold">{{ exam.name }}</td>
                         <td>{{ exam.class_schedule.subject.name|default:"-" }}</td>
-                        <td>{{ exam.class_schedule.subject.grade_level }} - {{ exam.class_schedule.section }}</td>
+                        <td>{{ exam.class_schedule.subject.grade_level }}-{{ exam.class_schedule.section }}</td>
                         <td>{{ exam.date|date:"M d, Y" }}</td>
                         <td>{{ exam.start_time|time:"H:i" }} - {{ exam.end_time|time:"H:i" }}</td>
                         <td>{{ exam.room }}</td>

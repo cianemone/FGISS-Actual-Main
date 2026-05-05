@@ -277,10 +277,6 @@ def student_self_edit_view(request):
     if request.method == "POST":
         # Get editable fields
         phone_number = request.POST.get('phone_number')
-        email = request.POST.get('email')
-        if email and '@' not in email:
-            email = f"{email}@fgiss.edu"
-        
         address = request.POST.get('address')
         emergency_contact_name = request.POST.get('emergency_contact_name')
         emergency_contact_phone = request.POST.get('emergency_contact_phone')
@@ -289,14 +285,6 @@ def student_self_edit_view(request):
         # Update only the editable fields
         if phone_number is not None:
             student.phone_number = phone_number
-        if email and email != student.email:
-            # Check if email is already used by another student
-            if Student.objects.filter(email=email).exclude(id=student.id).exists():
-                messages.error(request, 'This email is already used by another student.')
-                return redirect('student_self_edit')
-            student.email = email
-            # Update session email
-            request.session['user_email'] = email
         if address is not None:
             student.address = address
         if emergency_contact_name is not None:
@@ -307,7 +295,7 @@ def student_self_edit_view(request):
             student.emergency_contact_relationship = emergency_contact_relationship
         
         student.save()
-        messages.success(request, 'Your information has been updated successfully!')
+        messages.success(request, 'Your contact information has been updated successfully!')
         return redirect('student_detail', student_number=student.student_number)
     
     return render(request, 'student_self_edit.html', {

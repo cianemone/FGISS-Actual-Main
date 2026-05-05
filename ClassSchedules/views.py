@@ -66,9 +66,113 @@ def save_class_schedule(request):
             schedule_id = data.get('id')
             subject_id = data.get('subject_id')
             
+            day_of_week = data.get('day_of_week')
+            start_time_str = data.get('start_time')
+            end_time_str = data.get('end_time')
+            room = data.get('room')
+
             if not subject_id:
                 return JsonResponse({'status': 'error', 'message': 'Subject is required.'})
+            
+            if not all([day_of_week, start_time_str, end_time_str]):
+                return JsonResponse({'status': 'error', 'message': 'Missing required fields.'})
+
+            # Check for conflicts with other ClassSchedules
+            from django.db.models import Q
+            
+            section = data.get('section')
+            teacher_name = data.get('teacher_name')
+            
+            # Base conflict query: same day and overlapping time
+            base_conflict_query = Q(
+                day_of_week=day_of_week,
+                start_time__lt=end_time_str,
+                end_time__gt=start_time_str
+            )
+            
+            # Room conflict (only if room is specified)
+            room_conflict = Q()
+            if room:
+                room_conflict = Q(room=room)
                 
+            # Teacher conflict (only if teacher is specified)
+            teacher_conflict = Q()
+            if teacher_name:
+                teacher_conflict = Q(teacher_name=teacher_name)
+                
+            # Section conflict (only if section is specified)
+            section_conflict = Q()
+            if section:
+                section_conflict = Q(section=section)
+                
+            # Combine them: Conflict if room, teacher, OR section overlaps
+            conflict_filters = Q()
+            if room:
+                conflict_filters |= room_conflict
+            if teacher_name:
+                conflict_filters |= teacher_conflict
+            if section:
+                conflict_filters |= section_conflict
+                
+            class_conflicts = ClassSchedule.objects.filter(base_conflict_query & conflict_filters)
+
+            if schedule_id:
+                class_conflicts = class_conflicts.exclude(id=schedule_id)
+            
+            if class_conflicts.exists():
+                conflict = class_conflicts.first()
+                conflict_type = ""
+                if room and conflict.room == room:
+                    conflict_type = f"Room {room} is already occupied"
+                elif teacher_name and conflict.teacher_name == teacher_name:
+                    conflict_type = f"Teacher {teacher_name} is already busy"
+                elif section and conflict.section == section:
+                    conflict_type = f"Section {section} already has a class"
+                
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f"Conflict: {conflict_type} by '{conflict.subject.name if conflict.subject else 'Unnamed'}' on {day_of_week}s from {conflict.start_time} to {conflict.end_time}."
+                })
+
+            # Check for conflicts with ExamSchedules
+            from ExamSchedules.models import ExamSchedule
+            days = {
+                'Sunday': 1, 'Monday': 2, 'Tuesday': 3, 'Wednesday': 4,
+                'Thursday': 5, 'Friday': 6, 'Saturday': 7
+            }
+            weekday_num = days.get(day_of_week)
+            
+            exam_conflicts = ExamSchedule.objects.filter(
+                start_time__lt=end_time_str,
+                end_time__gt=start_time_str
+            )
+            
+            if weekday_num:
+                exam_conflicts = exam_conflicts.filter(date__week_day=weekday_num)
+
+            # For exams, we mainly care about room and section conflicts
+            # (Teacher info might not be directly in ExamSchedule model, but let's check room and section)
+            exam_conflict_filters = Q()
+            if room:
+                exam_conflict_filters |= Q(room=room)
+            if section:
+                exam_conflict_filters |= Q(class_schedule__section=section)
+                
+            exam_conflicts = exam_conflicts.filter(exam_conflict_filters)
+
+            if exam_conflicts.exists():
+                conflict = exam_conflicts.first()
+                conflict_type = ""
+                if room and conflict.room == room:
+                    conflict_type = f"Room {room} is reserved for an exam"
+                elif section and conflict.class_schedule and conflict.class_schedule.section == section:
+                    conflict_type = f"Section {section} has an exam"
+                    
+                return JsonResponse({
+                    'status': 'error', 
+                    'message': f"Conflict: {conflict_type} '{conflict.name}' scheduled on {conflict.date} (a {day_of_week}) from {conflict.start_time} to {conflict.end_time}."
+                })
+
             if schedule_id:
                 schedule = get_object_or_404(ClassSchedule, id=schedule_id)
             else:
@@ -77,10 +181,10 @@ def save_class_schedule(request):
             schedule.subject = get_object_or_404(Subject, id=subject_id)
             schedule.section = data.get('section')
             schedule.teacher_name = data.get('teacher_name')
-            schedule.day_of_week = data.get('day_of_week')
-            schedule.start_time = data.get('start_time')
-            schedule.end_time = data.get('end_time')
-            schedule.room = data.get('room')
+            schedule.day_of_week = day_of_week
+            schedule.start_time = start_time_str
+            schedule.end_time = end_time_str
+            schedule.room = room
             schedule.save()
             
             return JsonResponse({'status': 'success', 'message': 'Schedule saved successfully!'})
