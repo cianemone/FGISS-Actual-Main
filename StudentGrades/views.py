@@ -39,12 +39,13 @@ def report_cards_view(request):
 
     return render(request, 'report_cards.html', {
         'selected_student': selected_student,
+        'student': selected_student,
         'grades': grades_list,
         'average': round(average, 2)
     })
 
 def edit_report_cards_view(request):
-    allowed_roles = ['staff', 'admin', 'teacher']
+    allowed_roles = ['teacher', 'admin', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
         

@@ -148,13 +148,13 @@
             <p>Student Portal</p>
         </div>
         <nav class="mt-4">
-            <a href="/student/dashboard/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
-            <a href="/students/web/records/{{ student.student_number }}/" class="nav-link active"><i class="bi bi-person-badge"></i> My Profile</a>
-            <a href="/report-cards/" class="nav-link"><i class="bi bi-journal-text"></i> My Grades</a>
-            <a href="/students/self/edit/" class="nav-link"><i class="bi bi-gear"></i> Edit Info</a>
-            <a href="/class-schedule/" class="nav-link"><i class="bi bi-calendar3"></i> Class Schedule</a>
-            <a href="/course-syllabus/" class="nav-link"><i class="bi bi-book"></i> Course Syllabus</a>
-            <a href="/exam-schedule/" class="nav-link"><i class="bi bi-calendar-event"></i> Exam Schedule</a>
+            <a href="/student/dashboard/" class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="{% url 'student_detail' student.student_number %}" class="nav-link {% if request.resolver_match.url_name == 'student_detail' %}active{% endif %}"><i class="bi bi-person-badge"></i> My Profile</a>
+            <a href="{% url 'report-cards' %}" class="nav-link {% if request.resolver_match.url_name == 'report-cards' %}active{% endif %}"><i class="bi bi-journal-check"></i> My Grades</a>
+            <a href="{% url 'student_self_edit' %}" class="nav-link {% if request.resolver_match.url_name == 'student_self_edit' %}active{% endif %}"><i class="bi bi-person-gear"></i> Edit Profile</a>
+            <a href="/class-schedule/" class="nav-link {% if request.resolver_match.url_name == 'class-schedule' %}active{% endif %}"><i class="bi bi-calendar3"></i> Class Schedule</a>
+            <a href="/course-syllabus/" class="nav-link {% if request.resolver_match.url_name == 'course_syllabus' %}active{% endif %}"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a href="/exam-schedule/" class="nav-link {% if request.resolver_match.url_name == 'exam-schedule' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
             <a href="/logout/" class="nav-link"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>

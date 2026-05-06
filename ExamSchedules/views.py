@@ -36,7 +36,7 @@ def exam_schedule_view(request):
 def edit_exam_schedule_view(request):
     """Admin/Teacher view with CRUD capabilities"""
     user_type = request.session.get('user_type')
-    allowed_roles = ['admin', 'staff', 'teacher']
+    allowed_roles = ['admin', 'teacher']
     
     if user_type not in allowed_roles:
         return redirect('login')
@@ -54,7 +54,7 @@ def edit_exam_schedule_view(request):
 
 @csrf_exempt
 def save_exam_schedule(request):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
         
     if request.method == 'POST':
@@ -181,7 +181,7 @@ def save_exam_schedule(request):
 
 @csrf_exempt
 def delete_exam_schedule(request, exam_id):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
 
     if request.method == 'POST':

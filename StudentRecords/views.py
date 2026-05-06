@@ -64,7 +64,7 @@ class StudentViewSet(viewsets.ModelViewSet):
 def student_list_view(request):
     """Display list of students with filter options"""
     
-    allowed_roles = ['staff', 'admin']
+    allowed_roles = ['teacher', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         user_type = request.session.get('user_type')
         if user_type == 'student':
@@ -133,7 +133,7 @@ def student_list_view(request):
 def student_form_view(request):
     """Add or edit student information"""
     
-    allowed_roles = ['staff', 'admin']
+    allowed_roles = ['teacher', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
     
@@ -214,7 +214,7 @@ def student_form_view(request):
 def student_detail_view(request, student_number):
     """Display detailed information for a specific student"""
     
-    allowed_roles = ['staff', 'admin']
+    allowed_roles = ['teacher', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         # Check if user is a student viewing their own record
         user_type = request.session.get('user_type')
@@ -249,7 +249,7 @@ def student_detail_view(request, student_number):
 def student_delete_view(request, student_number):
     """Delete a student record"""
     
-    allowed_roles = ['staff', 'admin']
+    allowed_roles = ['teacher', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
     
@@ -309,7 +309,7 @@ def student_self_edit_view(request):
 def incident_report_view(request):
     """View to handle searching students and logging incident reports"""
     
-    allowed_roles = ['admin', 'coordinator', 'staff', 'guidance']
+    allowed_roles = ['admin', 'coordinator', 'guidance', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
 
@@ -344,7 +344,7 @@ def incident_report_view(request):
     })
 
 def delete_incident_report(request, report_id):
-    allowed_roles = ['admin', 'coordinator', 'staff', 'guidance']
+    allowed_roles = ['admin', 'coordinator', 'guidance', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
         

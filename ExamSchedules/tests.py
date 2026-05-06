@@ -14,7 +14,7 @@ class ScheduleConflictTests(TestCase):
         # Create an existing ClassSchedule
         self.class_sched = ClassSchedule.objects.create(
             subject=self.subject,
-            section="A",
+            section="1-A",
             day_of_week="Monday",
             start_time=time(10, 0),
             end_time=time(11, 0),

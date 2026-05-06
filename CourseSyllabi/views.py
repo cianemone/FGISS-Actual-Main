@@ -28,7 +28,7 @@ def course_syllabus_view(request):
         else:
             # Students only see syllabi for their grade level
             syllabi = Syllabus.objects.filter(grade_level=student.grade_level)
-    elif user_type in ['admin', 'staff', 'teacher']:
+    elif user_type in ['admin', 'teacher']:
         # Admin/Staff/Teacher see all
         syllabi = Syllabus.objects.all()
     else:
@@ -49,7 +49,7 @@ def course_syllabus_view(request):
     })
 
 def syllabus_create(request):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return redirect('course_syllabus')
     
     if request.method == 'POST':
@@ -73,7 +73,7 @@ def syllabus_create(request):
     })
 
 def syllabus_update(request, pk):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return redirect('course_syllabus')
     
     syllabus = get_object_or_404(Syllabus, pk=pk)
@@ -94,7 +94,7 @@ def syllabus_update(request, pk):
     })
 
 def syllabus_delete(request, pk):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return redirect('course_syllabus')
     
     syllabus = get_object_or_404(Syllabus, pk=pk)

@@ -31,8 +31,7 @@ def login_check_view(request):
                 # Determine user_type based on database role
                 user_type = 'student'
                 if role_name == 'admin': user_type = 'admin'
-                elif 'teacher' in role_name: user_type = 'teacher'
-                elif 'staff' in role_name: user_type = 'staff'
+                elif 'teacher' in role_name or 'staff' in role_name: user_type = 'teacher'
                 elif 'guidance' in role_name: user_type = 'guidance'
                 elif role_name == 'coordinator': user_type = 'coordinator'
                 

@@ -29,7 +29,7 @@ def class_schedule_view(request):
                 schedules = schedules.filter(subject__grade_level=student.grade_level)
             if student.section:
                 schedules = schedules.filter(section=student.section)
-    elif user_type in ['admin', 'staff', 'teacher']:
+    elif user_type in ['admin', 'teacher']:
         if query_section:
             schedules = schedules.filter(section=query_section)
         if query_grade:
@@ -56,13 +56,13 @@ def class_schedule_view(request):
         'current_grade': query_grade,
         'user_email': user_email,
         'user_type': user_type,
-        'is_admin_or_staff': user_type in ['admin', 'staff', 'teacher'],
+        'is_admin_or_teacher': user_type in ['admin', 'teacher'],
         'student': student
     })
 
 @csrf_exempt
 def save_class_schedule(request):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
         
     if request.method == 'POST':
@@ -199,7 +199,7 @@ def save_class_schedule(request):
 
 @csrf_exempt
 def delete_class_schedule(request, schedule_id):
-    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+    if request.session.get('user_type') not in ['admin', 'teacher']:
         return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
 
     if request.method == 'POST':

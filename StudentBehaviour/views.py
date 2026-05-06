@@ -6,7 +6,7 @@ from StudentRecords.models import Student
 
 def intervention_plan_view(request):
     # Check if user has permission (guidance, admin, or coordinator)
-    allowed_roles = ['guidance', 'admin', 'coordinator', 'staff', 'teacher']
+    allowed_roles = ['guidance', 'admin', 'coordinator', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
         
@@ -35,7 +35,7 @@ def intervention_plan_view(request):
     })
 
 def save_intervention_plan(request):
-    allowed_roles = ['guidance', 'admin', 'coordinator', 'staff', 'teacher']
+    allowed_roles = ['guidance', 'admin', 'coordinator', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
 
@@ -66,7 +66,7 @@ def save_intervention_plan(request):
     return redirect('intervention-plan')
 
 def delete_intervention_plan(request, student_id):
-    allowed_roles = ['guidance', 'admin', 'coordinator', 'staff', 'teacher']
+    allowed_roles = ['guidance', 'admin', 'coordinator', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
 

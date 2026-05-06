@@ -174,36 +174,41 @@
     <nav class="mt-4">
         {% if request.session.user_type == 'student' %}
         <a href="/student/dashboard/" class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        {% elif request.session.user_type == 'admin' %}
-        <a href="/admin-dashboard/" class="nav-link {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        {% endif %}
-
-        {% if request.session.user_type == 'admin' %}
-        <a href="/user-roles/" class="nav-link {% if request.resolver_match.url_name == 'user-roles' %}active{% endif %}"><i class="bi bi-people"></i> Users and Roles</a>
-        {% endif %}
-
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
-        <a href="{% url 'student_list' %}" class="nav-link {% if request.resolver_match.url_name == 'student_list' or request.resolver_match.url_name == 'student_add' or request.resolver_match.url_name == 'student_edit' or request.resolver_match.url_name == 'student_detail' %}active{% endif %}"><i class="bi bi-people-fill"></i> Student Records</a>
-        {% endif %}
-
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
-        <a href="/edit-report-cards/" class="nav-link {% if request.resolver_match.url_name == 'edit-report-cards' %}active{% endif %}"><i class="bi bi-journal-text"></i> Student Grades</a>
-        {% endif %}
-        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
-        <a href="{% url 'incident_report' %}" class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}">
-            <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
-        </a>
-        {% endif %}
-        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
-        <a href="/intervention-plan/" class="nav-link {% if request.resolver_match.url_name == 'intervention-plan' %}active{% endif %}"><i class="bi bi-shield-check"></i> Student Behaviour</a>
-        {% endif %}
-        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' or request.session.user_type == 'student' %}
-        <a href="/course-syllabus/" class="nav-link {% if request.resolver_match.url_name == 'course_syllabus' or request.resolver_match.url_name == 'syllabus_create' or request.resolver_match.url_name == 'syllabus_update' %}active{% endif %}"><i class="bi bi-book"></i> Course Syllabi</a>
-        <a href="{% if request.session.user_type == 'student' %}/exam-schedule/{% else %}/exam-schedule/edit/{% endif %}" class="nav-link {% if request.resolver_match.url_name == 'exam-schedule' or request.resolver_match.url_name == 'edit-exam-schedule' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a href="{% url 'student_detail' student.student_number %}" class="nav-link {% if request.resolver_match.url_name == 'student_detail' %}active{% endif %}"><i class="bi bi-person-badge"></i> My Profile</a>
+        <a href="{% url 'report-cards' %}" class="nav-link {% if request.resolver_match.url_name == 'report-cards' %}active{% endif %}"><i class="bi bi-journal-check"></i> My Grades</a>
+        <a href="{% url 'student_self_edit' %}" class="nav-link {% if request.resolver_match.url_name == 'student_self_edit' %}active{% endif %}"><i class="bi bi-person-gear"></i> Edit Profile</a>
         <a href="/class-schedule/" class="nav-link {% if request.resolver_match.url_name == 'class-schedule' %}active{% endif %}"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        <a href="/course-syllabus/" class="nav-link {% if request.resolver_match.url_name == 'course_syllabus' or request.resolver_match.url_name == 'syllabus_create' or request.resolver_match.url_name == 'syllabus_update' %}active{% endif %}"><i class="bi bi-book"></i> Course Syllabi</a>
+        <a href="/exam-schedule/" class="nav-link {% if request.resolver_match.url_name == 'exam-schedule' or request.resolver_match.url_name == 'edit-exam-schedule' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        {% else %}
+            {% if request.session.user_type == 'admin' %}
+            <a href="/admin-dashboard/" class="nav-link {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="/user-roles/" class="nav-link {% if request.resolver_match.url_name == 'user-roles' %}active{% endif %}"><i class="bi bi-people"></i> Users and Roles</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' %}
+            <a href="{% url 'student_list' %}" class="nav-link {% if request.resolver_match.url_name == 'student_list' or request.resolver_match.url_name == 'student_add' or request.resolver_match.url_name == 'student_edit' or request.resolver_match.url_name == 'student_detail' %}active{% endif %}"><i class="bi bi-people-fill"></i> Student Records</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' %}
+            <a href="/edit-report-cards/" class="nav-link {% if request.resolver_match.url_name == 'edit-report-cards' %}active{% endif %}"><i class="bi bi-journal-text"></i> Student Grades</a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' or request.session.user_type == 'teacher' %}
+            <a href="{% url 'incident_report' %}" class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+            </a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' or request.session.user_type == 'teacher' %}
+            <a href="/intervention-plan/" class="nav-link {% if request.resolver_match.url_name == 'intervention-plan' %}active{% endif %}"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' %}
+            <a href="/course-syllabus/" class="nav-link {% if request.resolver_match.url_name == 'course_syllabus' or request.resolver_match.url_name == 'syllabus_create' or request.resolver_match.url_name == 'syllabus_update' %}active{% endif %}"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a href="/exam-schedule/edit/" class="nav-link {% if request.resolver_match.url_name == 'edit-exam-schedule' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a href="/class-schedule/" class="nav-link {% if request.resolver_match.url_name == 'class-schedule' %}active{% endif %}"><i class="bi bi-calendar3"></i> Class Schedule</a>
+            {% endif %}
         {% endif %}
         
         <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
@@ -223,14 +228,14 @@
             <h3 class="fw-bold mb-1">Class Schedule</h3>
             <p class="text-muted small mb-0">Academic Year 2025-2026</p>
         </div>
-        {% if is_admin_or_staff %}
+        {% if is_admin_or_teacher %}
         <button class="btn btn-pink" data-bs-toggle="modal" data-bs-target="#scheduleModal" onclick="resetForm()">
             <i class="bi bi-plus-lg me-1"></i> Add Item
         </button>
         {% endif %}
     </div>
 
-    {% if is_admin_or_staff %}
+    {% if is_admin_or_teacher %}
     <div class="card p-4 mb-4">
         <form method="get" class="row g-3 align-items-end">
             <div class="col-md-5">
@@ -263,7 +268,7 @@
         <i class="bi bi-info-circle-fill me-3 fs-4"></i>
         <div>
             <h6 class="mb-0 fw-bold">My Current Schedule</h6>
-            <p class="mb-0 small">Viewing schedule for <strong>{{ student.grade_level|default:"N/A" }}-{{ student.section|default:"N/A" }}</strong></p>
+            <p class="mb-0 small">Viewing schedule for <strong>{{ student.grade_level|default:"N/A" }} {{ student.section|upper|default:"N/A" }}</strong></p>
         </div>
     </div>
     {% endif %}
@@ -280,7 +285,7 @@
                         <th>Day</th>
                         <th>Time</th>
                         <th>Room</th>
-                        {% if is_admin_or_staff %}
+                        {% if is_admin_or_teacher %}
                         <th>Actions</th>
                         {% endif %}
                     </tr>
@@ -295,7 +300,7 @@
                         <td>{{ schedule.day_of_week }}</td>
                         <td>{{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}</td>
                         <td>{{ schedule.room }}</td>
-                        {% if is_admin_or_staff %}
+                        {% if is_admin_or_teacher %}
                         <td>
                             <button class="btn btn-sm btn-outline-primary me-1" onclick="editSchedule({{ schedule.id }}, {{ schedule.subject.id }}, '{{ schedule.section|escapejs }}', '{{ schedule.teacher_name|escapejs }}', '{{ schedule.day_of_week|escapejs }}', '{{ schedule.start_time|time:'H:i' }}', '{{ schedule.end_time|time:'H:i' }}', '{{ schedule.room|escapejs }}')">
                                 <i class="bi bi-pencil"></i>
@@ -308,7 +313,7 @@
                     </tr>
                     {% empty %}
                     <tr>
-                        <td colspan="{% if is_admin_or_staff %}8{% else %}7{% endif %}" class="text-center py-4 text-muted">No schedules found.</td>
+                        <td colspan="{% if is_admin_or_teacher %}8{% else %}7{% endif %}" class="text-center py-4 text-muted">No schedules found.</td>
                     </tr>
                     {% endfor %}
                 </tbody>
