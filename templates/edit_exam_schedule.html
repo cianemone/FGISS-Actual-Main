@@ -154,6 +154,11 @@
         
         <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
         <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+        <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
+            <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+        </a>
+        {% endif %}
         <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
         <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
         <a class="nav-link active" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>

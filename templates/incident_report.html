@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - Incident Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <style>
+        body {
+            font-family: 'Open Sans', sans-serif;
+            background-color: #f4f5f7;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            width: 260px;
+            height: 100vh;
+            background-color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            border-right: 1px solid #e5e5e5;
+            z-index: 1000;
+        }
+
+        .sidebar-header {
+            background-color: #fb5bb2;
+            color: white;
+            text-align: center;
+            padding: 30px 20px;
+            height: 120px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .sidebar-header h2 {
+            font-weight: 700;
+            margin: 0;
+            letter-spacing: 1px;
+            font-size: 2rem;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 600;
+            padding: 15px 25px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+        }
+
+        .nav-link.active {
+            background-color: #fff0f7;
+            color: #fb5bb2;
+            border-right: 4px solid #fb5bb2;
+        }
+
+        .topbar {
+            margin-left: 260px;
+            height: 80px;
+            background-color: #f4f5f7;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding: 0 40px;
+        }
+
+        .user-profile {
+            background-color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .main-content {
+            margin-left: 260px;
+            padding: 30px 50px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            background-color: white;
+            margin-bottom: 25px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .card-header-clean {
+            background-color: white;
+            border-bottom: 1px solid #f0f0f0;
+            padding: 20px 25px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #888;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .student-context {
+            background: linear-gradient(to right, #fff, #fff0f7);
+            border: 1px solid #ffe6f0;
+        }
+
+        .context-badge {
+            background-color: white;
+            border: 1px solid #e0e0e0;
+            padding: 5px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: #555;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-pink {
+            background-color: #fb5bb2;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 4px;
+            font-weight: 600;
+            border: none;
+        }
+        .btn-pink:hover { background-color: #d65aa0; color: white; }
+
+        .search-container { position: relative; }
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            max-height: 250px;
+            overflow-y: auto;
+            z-index: 1050;
+            display: none;
+        }
+        .search-result-item {
+            padding: 10px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #f8f9fa;
+        }
+        .search-result-item:hover { background-color: #fff0f7; color: #fb5bb2; }
+    </style>
+</head>
+<body>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h2>FGISS</h2>
+        <p>Admin Portal</p>
+    </div>
+    <nav class="mt-4">
+        {% if request.session.user_type == 'admin' %}
+        <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+        {% endif %}
+        
+        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+        <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+        {% endif %}
+
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+        <a class="nav-link active" href="{% url 'incident_report' %}">
+            <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+        </a>
+        {% endif %}
+
+        <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+        <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
+        <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        {% endif %}
+        
+        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+    </nav>
+</div>
+
+<div class="topbar">
+    <div class="user-profile">
+        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
+        <span class="badge bg-secondary">{{ request.session.user_type|title }}</span>
+    </div>
+</div>
+
+<div class="main-content">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h3 class="fw-bold text-dark mb-1">Incident Reporting</h3>
+            <p class="text-muted small mb-0">Record and track student incidents across campus.</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <label for="studentSearchInput" class="fw-bold text-dark">Search Student:</label>
+            <div class="search-container" style="width: 300px;">
+                <input type="text" id="studentSearchInput" class="form-control" 
+                       placeholder="Enter student name..." autocomplete="off" 
+                       value="{{ selected_student.first_name }} {{ selected_student.last_name }}">
+                <div id="searchResults" class="search-results"></div>
+            </div>
+        </div>
+    </div>
+
+    {% if selected_student %}
+    <div class="card p-4 student-context mb-4">
+        <div class="row g-3">
+            <div class="col-md-4"><div class="context-badge w-100"><i class="bi bi-person"></i> {{ selected_student.first_name }} {{ selected_student.last_name }}</div></div>
+            <div class="col-md-4"><div class="context-badge w-100"><i class="bi bi-hash"></i> {{ selected_student.student_number }}</div></div>
+            <div class="col-md-4"><div class="context-badge w-100"><i class="bi bi-mortarboard"></i> Grade: {{ selected_student.grade_level|default:"N/A" }}</div></div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-header-clean">
+            <h6 class="fw-bold mb-0">Log New Incident</h6>
+        </div>
+        <div class="card-body">
+            <form action="/save-incident-report/" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="student_id" value="{{ selected_student.id }}">
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="section-label">Incident Type <span class="text-danger">*</span></label>
+                        <select name="incident_type" class="form-select" required>
+                            <option value="" selected disabled>Select Type...</option>
+                            <option value="Academic">Academic</option>
+                            <option value="Behavioral">Behavioral</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="section-label">Date of Incident</label>
+                        <input type="date" name="incident_date" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="section-label">Detailed Report <span class="text-danger">*</span></label>
+                    <textarea name="report_content" class="form-control" rows="5" placeholder="Describe the incident in detail..." required></textarea>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-pink"><i class="bi bi-save me-2"></i> Save Incident Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card mt-4">
+        <div class="card-header-clean bg-light">
+            <h6 class="fw-bold mb-0">Incident History for {{ selected_student.first_name }}</h6>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-4">Date</th>
+                            <th>Type</th>
+                            <th>Report Details</th>
+                            <th>Reported By</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in incident_history %}
+                        <tr>
+                            <td class="ps-4 text-nowrap">{{ report.incident_date|date:"M d, Y" }}</td>
+                            <td>
+                                <span class="badge {% if report.incident_type == 'Behavioral' %}bg-danger{% elif report.incident_type == 'Academic' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                    {{ report.incident_type }}
+                                </span>
+                            </td>
+                            <td>{{ report.report_content }}</td>
+                            <td>{{ report.reported_by }}</td>
+                            <td>
+                                <a href="/delete-incident-report/{{ report.id }}/?student_id={{ selected_student.id }}" 
+                                   class="btn btn-sm btn-outline-danger" 
+                                   onclick="return confirm('Are you sure you want to delete this report?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                <i class="bi bi-folder-x fs-4 d-block mb-2"></i>
+                                No incident reports found for this student.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info py-5 text-center">
+        <i class="bi bi-search fs-2 d-block mb-3"></i>
+        Please search for and select a student to view or create incident reports.
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    const studentsData = [
+        {% for student in students %}
+        {
+            id: "{{ student.id }}",
+            name: "{{ student.first_name|escapejs }} {{ student.last_name|escapejs }}",
+            number: "{{ student.student_number|escapejs }}"
+        },
+        {% endfor %}
+    ];
+
+    const searchInput = document.getElementById('studentSearchInput');
+    const searchResults = document.getElementById('searchResults');
+
+    searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase().trim();
+        if (query.length === 0) {
+            searchResults.style.display = 'none';
+            return;
+        }
+
+        const filtered = studentsData.filter(s => 
+            s.name.toLowerCase().includes(query) || s.number.toLowerCase().includes(query)
+        );
+
+        renderResults(filtered);
+    });
+
+    function renderResults(list) {
+        if (list.length === 0) {
+            searchResults.innerHTML = '<div class="p-3 text-muted small">No students found</div>';
+        } else {
+            searchResults.innerHTML = list.map(student => `
+                <div class="search-result-item" onclick="selectStudent('${student.id}')">
+                    <div class="fw-bold">${student.name}</div>
+                    <div class="small text-muted">${student.number}</div>
+                </div>
+            `).join('');
+        }
+        searchResults.style.display = 'block';
+    }
+
+    function selectStudent(id) {
+        window.location.href = '/incident-report/?student_id=' + id;
+    }
+
+    document.addEventListener('click', e => {
+        if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
+            searchResults.style.display = 'none';
+        }
+    });
+</script>
+
+</body>
+</html>

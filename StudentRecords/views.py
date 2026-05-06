@@ -9,6 +9,7 @@ from django.db import models as django_models
 from django.db.models import Count
 from .models import Student
 from .serializers import StudentSerializer
+from .models import Student, IncidentReport
 
 # REST API ViewSet
 class StudentViewSet(viewsets.ModelViewSet):
@@ -302,3 +303,46 @@ def student_self_edit_view(request):
     return render(request, 'student_self_edit.html', {
         'student': student,
     })
+
+def incident_report_view(request):
+    """View to handle searching students and logging incident reports"""
+    
+    allowed_roles = ['admin', 'teacher', 'coordinator', 'staff']
+    if request.session.get('user_type') not in allowed_roles:
+        return redirect('login')
+
+    # 2. Handle Data Saving (POST)
+    if request.method == "POST":
+        student_id = request.POST.get('student_id')
+        IncidentReport.objects.create(
+            student_id=student_id,
+            incident_type=request.POST.get('incident_type'),
+            incident_date=request.POST.get('incident_date'),
+            report_content=request.POST.get('report_content'),
+            reported_by=request.session.get('user_email') # Logs who created it
+        )
+        messages.success(request, 'Incident report saved successfully.')
+        return redirect(f'/incident-report/?student_id={student_id}')
+
+    # 3. Handle Page Display (GET)
+    students = Student.objects.filter(is_active=True)
+    selected_student = None
+    incident_history = []
+    
+    student_id = request.GET.get('student_id')
+    if student_id:
+        selected_student = get_object_or_404(Student, id=student_id)
+        # Display past incidents, newest first
+        incident_history = IncidentReport.objects.filter(student=selected_student).order_by('-incident_date')
+
+    return render(request, 'incident_report.html', {
+        'students': students,
+        'selected_student': selected_student,
+        'incident_history': incident_history,
+    })
+
+def delete_incident_report(request, report_id):
+    report = get_object_or_404(IncidentReport, id=report_id)
+    student_id = request.GET.get('student_id')
+    report.delete()
+    return redirect(f'/incident-report/?student_id={student_id}')

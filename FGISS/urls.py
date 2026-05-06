@@ -9,7 +9,8 @@ from StudentBehaviour.views import intervention_plan_view, save_intervention_pla
 from CourseSyllabi.views import course_syllabus_view
 from ExamSchedules.views import exam_schedule_view
 from ClassSchedules.views import class_schedule_view
-from UsersANDuserRoles.views import student_dashboard_view  # Add this import
+from UsersANDuserRoles.views import student_dashboard_view
+from StudentRecords import views as student_views
 
 urlpatterns = [
     path("", TemplateView.as_view(template_name="login.html"), name="login"),
@@ -35,6 +36,9 @@ urlpatterns = [
     path("students/", include("StudentRecords.urls")),  # FOR WEB INTERFACE
     path("api/grades/", include("StudentGrades.urls")),
     path("student/dashboard/", student_dashboard_view, name="student_dashboard"),
+    path('incident-report/', student_views.incident_report_view, name='incident_report'),
+    path('save-incident-report/', student_views.incident_report_view, name='save_incident_report'),
+    path('delete-incident-report/<int:report_id>/', student_views.delete_incident_report, name='delete_incident_report'),
 
     path("api/behaviour/", include("StudentBehaviour.urls")),
     path("api/schedules/", include("ClassSchedules.urls")),

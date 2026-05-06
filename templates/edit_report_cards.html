@@ -228,6 +228,11 @@
         
         <a class="nav-link active" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+        <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
+            <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+        </a>
+        {% endif %}
         {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' %}
         <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
         {% endif %}

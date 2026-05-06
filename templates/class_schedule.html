@@ -185,13 +185,16 @@
             <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
             <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
             {% endif %}
-            
             <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
             {% endif %}
-            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+            </a>
+            {% endif %}
             <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}

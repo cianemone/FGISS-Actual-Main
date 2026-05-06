@@ -159,7 +159,11 @@
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a href="/edit-report-cards/" class="nav-link"><i class="bi bi-journal-text"></i> Student Grades</a>
             {% endif %}
-
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+            <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+            </a>
+            {% endif %}
             <a href="/intervention-plan/" class="nav-link"><i class="bi bi-shield-check"></i> Student Behaviour</a>
             
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
