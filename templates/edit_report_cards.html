@@ -94,6 +94,29 @@
             border: 1px solid #e5e5e5;
         }
 
+        .user-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .btn-logout {
+            border: 1px solid #ccc;
+            background: transparent;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 5px 15px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-logout:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
         /* --- MAIN LAYOUT --- */
         .main-content {
             margin-left: 260px;
@@ -223,21 +246,27 @@
         {% if request.session.user_type == 'admin' %}
         <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
         <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+        {% endif %}
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
         <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
         {% endif %}
         
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
         <a class="nav-link active" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
+        {% endif %}
        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
         <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
             <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
         </a>
         {% endif %}
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'guidance' %}
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
         <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
         {% endif %}
        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
         <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
         <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
         <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
@@ -249,8 +278,8 @@
 
 <div class="topbar">
     <div class="user-profile">
-        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
-        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+        <span class="user-name">{{ request.session.user_email }}</span>
+        <a href="{% url 'logout' %}" class="btn-logout">Log Out</a>
     </div>
 </div>
 

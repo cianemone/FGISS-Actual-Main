@@ -29,11 +29,13 @@ def class_schedule_view(request):
                 schedules = schedules.filter(subject__grade_level=student.grade_level)
             if student.section:
                 schedules = schedules.filter(section=student.section)
-    else:
+    elif user_type in ['admin', 'staff', 'teacher']:
         if query_section:
             schedules = schedules.filter(section=query_section)
         if query_grade:
             schedules = schedules.filter(subject__grade_level=query_grade)
+    else:
+        return redirect('login')
 
     # Get unique sections for the filter and dropdown
     # Combine sections from both existing schedules and defined student sections
@@ -60,6 +62,9 @@ def class_schedule_view(request):
 
 @csrf_exempt
 def save_class_schedule(request):
+    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+        
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -194,6 +199,9 @@ def save_class_schedule(request):
 
 @csrf_exempt
 def delete_class_schedule(request, schedule_id):
+    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
     if request.method == 'POST':
         try:
             schedule = get_object_or_404(ClassSchedule, id=schedule_id)

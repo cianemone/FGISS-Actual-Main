@@ -45,6 +45,12 @@
             font-size: 2rem;
         }
 
+        .sidebar-header p {
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
         .nav-link {
             color: #555;
             font-weight: 600;
@@ -88,6 +94,29 @@
             border: 1px solid #e5e5e5;
         }
 
+        .user-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .btn-logout {
+            border: 1px solid #ccc;
+            background: transparent;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 5px 15px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-logout:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
         .main-content {
             margin-left: 260px;
             padding: 30px 50px;
@@ -96,7 +125,7 @@
         .card {
             border: none;
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
             background-color: white;
             margin-bottom: 25px;
             border: 1px solid #e5e5e5;
@@ -136,11 +165,27 @@
             gap: 6px;
         }
 
+        .table thead th {
+            background-color: #f8f9fc;
+            color: #5a5c69;
+            font-weight: 700;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 15px 25px;
+        }
+        
+        .table tbody td {
+            vertical-align: middle;
+            padding: 18px 25px;
+            color: #444;
+        }
+
         .btn-pink {
             background-color: #fb5bb2;
             color: white;
             padding: 10px 30px;
-            border-radius: 4px;
+            border-radius: 6px;
             font-weight: 600;
             border: none;
         }
@@ -154,6 +199,7 @@
             right: 0;
             background: white;
             border: 1px solid #e5e5e5;
+            border-top: none;
             border-radius: 0 0 8px 8px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             max-height: 250px;
@@ -167,53 +213,79 @@
             border-bottom: 1px solid #f8f9fa;
         }
         .search-result-item:hover { background-color: #fff0f7; color: #fb5bb2; }
+        
+        .error-message {
+            color: #dc3545;
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
 
-<div class="sidebar">
-    <div class="sidebar-header">
-        <h2>FGISS</h2>
-        <p>Admin Portal</p>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>FGISS</h2>
+            <p>{% if request.session.user_type == 'student' %}Student Portal{% else %}Admin Portal{% endif %}</p>
+        </div>
+        <nav class="mt-4">
+            {% if request.session.user_type == 'student' %}
+            <a href="/student/dashboard/" class="nav-link {% if request.resolver_match.url_name == 'student_dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            {% elif request.session.user_type == 'admin' %}
+            <a href="/admin-dashboard/" class="nav-link {% if request.resolver_match.url_name == 'admin-dashboard' %}active{% endif %}"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' %}
+            <a href="/user-roles/" class="nav-link {% if request.resolver_match.url_name == 'user-roles' %}active{% endif %}"><i class="bi bi-people"></i> Users and Roles</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+            <a href="{% url 'student_list' %}" class="nav-link {% if request.resolver_match.url_name == 'student_list' or request.resolver_match.url_name == 'student_add' or request.resolver_match.url_name == 'student_edit' or request.resolver_match.url_name == 'student_detail' %}active{% endif %}"><i class="bi bi-people-fill"></i> Student Records</a>
+            {% endif %}
+
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+            <a href="/edit-report-cards/" class="nav-link {% if request.resolver_match.url_name == 'edit-report-cards' %}active{% endif %}"><i class="bi bi-journal-text"></i> Student Grades</a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
+            <a href="{% url 'incident_report' %}" class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}">
+                <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
+            </a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
+            <a href="/intervention-plan/" class="nav-link {% if request.resolver_match.url_name == 'intervention-plan' %}active{% endif %}"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' or request.session.user_type == 'student' %}
+            <a href="/course-syllabus/" class="nav-link {% if request.resolver_match.url_name == 'course_syllabus' or request.resolver_match.url_name == 'syllabus_create' or request.resolver_match.url_name == 'syllabus_update' %}active{% endif %}"><i class="bi bi-book"></i> Course Syllabi</a>
+            <a href="{% if request.session.user_type == 'student' %}/exam-schedule/{% else %}/exam-schedule/edit/{% endif %}" class="nav-link {% if request.resolver_match.url_name == 'exam-schedule' or request.resolver_match.url_name == 'edit-exam-schedule' %}active{% endif %}"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+            <a href="/class-schedule/" class="nav-link {% if request.resolver_match.url_name == 'class-schedule' %}active{% endif %}"><i class="bi bi-calendar3"></i> Class Schedule</a>
+            {% endif %}
+            
+            <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
+        </nav>
     </div>
-    <nav class="mt-4">
-        {% if request.session.user_type == 'admin' %}
-        <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
-        {% endif %}
-        
-        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
-        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
-        <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
-        {% endif %}
-
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
-        <a class="nav-link active" href="{% url 'incident_report' %}">
-            <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
-        </a>
-        {% endif %}
-
-        <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
-        
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
-        <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
-        <a class="nav-link" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
-        <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
-        {% endif %}
-        
-        <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
-    </nav>
-</div>
 
 <div class="topbar">
     <div class="user-profile">
-        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
-        <span class="badge bg-secondary">{{ request.session.user_type|title }}</span>
+        <span class="user-name">{{ request.session.user_email }}</span>
+        <a href="{% url 'logout' %}" class="btn-logout">Log Out</a>
     </div>
 </div>
 
 <div class="main-content">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold text-dark mb-1">Incident Reporting</h3>
@@ -225,13 +297,19 @@
                 <input type="text" id="studentSearchInput" class="form-control" 
                        placeholder="Enter student name..." autocomplete="off" 
                        value="{{ selected_student.first_name }} {{ selected_student.last_name }}">
+                <input type="hidden" id="hiddenStudentId" value="{{ selected_student.id }}">
                 <div id="searchResults" class="search-results"></div>
+                <div id="studentNotFoundError" class="error-message">This student does not exist.</div>
             </div>
         </div>
     </div>
 
     {% if selected_student %}
     <div class="card p-4 student-context mb-4">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+            <h5 class="fw-bold text-dark mb-0"><i class="bi bi-info-circle-fill text-primary me-2"></i>Student Context</h5>
+            <span class="badge bg-light text-dark"><i class="bi bi-person-check"></i> Selected</span>
+        </div>
         <div class="row g-3">
             <div class="col-md-4"><div class="context-badge w-100"><i class="bi bi-person"></i> {{ selected_student.first_name }} {{ selected_student.last_name }}</div></div>
             <div class="col-md-4"><div class="context-badge w-100"><i class="bi bi-hash"></i> {{ selected_student.student_number }}</div></div>
@@ -283,7 +361,7 @@
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
-                    <thead class="table-light">
+                    <thead>
                         <tr>
                             <th class="ps-4">Date</th>
                             <th>Type</th>
@@ -345,27 +423,36 @@
 
     const searchInput = document.getElementById('studentSearchInput');
     const searchResults = document.getElementById('searchResults');
+    const hiddenStudentId = document.getElementById('hiddenStudentId');
+    const errorMsg = document.getElementById('studentNotFoundError');
+
+    let selectedIndex = -1;
+    let filteredStudents = [];
 
     searchInput.addEventListener('input', function() {
         const query = this.value.toLowerCase().trim();
+        errorMsg.style.display = 'none';
+        
         if (query.length === 0) {
             searchResults.style.display = 'none';
             return;
         }
 
-        const filtered = studentsData.filter(s => 
-            s.name.toLowerCase().includes(query) || s.number.toLowerCase().includes(query)
+        filteredStudents = studentsData.filter(student => 
+            student.name.toLowerCase().includes(query) || 
+            student.number.toLowerCase().includes(query)
         );
 
-        renderResults(filtered);
+        renderResults();
     });
 
-    function renderResults(list) {
-        if (list.length === 0) {
+    function renderResults() {
+        if (filteredStudents.length === 0) {
             searchResults.innerHTML = '<div class="p-3 text-muted small">No students found</div>';
         } else {
-            searchResults.innerHTML = list.map(student => `
-                <div class="search-result-item" onclick="selectStudent('${student.id}')">
+            searchResults.innerHTML = filteredStudents.map((student, index) => `
+                <div class="search-result-item ${index === selectedIndex ? 'active' : ''}" 
+                     onclick="selectStudent('${student.id}')">
                     <div class="fw-bold">${student.name}</div>
                     <div class="small text-muted">${student.number}</div>
                 </div>
@@ -378,6 +465,33 @@
         window.location.href = '/incident-report/?student_id=' + id;
     }
 
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowDown') {
+            selectedIndex = Math.min(selectedIndex + 1, filteredStudents.length - 1);
+            renderResults();
+            e.preventDefault();
+        } else if (e.key === 'ArrowUp') {
+            selectedIndex = Math.max(selectedIndex - 1, 0);
+            renderResults();
+            e.preventDefault();
+        } else if (e.key === 'Enter') {
+            e.preventDefault();
+            if (selectedIndex >= 0 && selectedIndex < filteredStudents.length) {
+                selectStudent(filteredStudents[selectedIndex].id);
+            } else {
+                const query = searchInput.value.toLowerCase().trim();
+                const exactMatch = studentsData.find(s => s.name.toLowerCase() === query);
+                
+                if (exactMatch) {
+                    selectStudent(exactMatch.id);
+                } else {
+                    errorMsg.style.display = 'block';
+                    searchResults.style.display = 'none';
+                }
+            }
+        }
+    });
+
     document.addEventListener('click', e => {
         if (!searchInput.contains(e.target) && !searchResults.contains(e.target)) {
             searchResults.style.display = 'none';
@@ -385,5 +499,6 @@
     });
 </script>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

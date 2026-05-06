@@ -43,7 +43,7 @@ def edit_exam_schedule_view(request):
     
     exams = ExamSchedule.objects.all().order_by('date', 'start_time')
     class_schedules = ClassSchedule.objects.all().order_by('subject__grade_level', 'section', 'subject__name')
-    syllabi = Syllabus.objects.all().order_by('course_code')
+    syllabi = Syllabus.objects.all().order_by('title')
     
     return render(request, 'edit_exam_schedule.html', {
         'exams': exams,
@@ -54,6 +54,9 @@ def edit_exam_schedule_view(request):
 
 @csrf_exempt
 def save_exam_schedule(request):
+    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+        
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
@@ -178,6 +181,9 @@ def save_exam_schedule(request):
 
 @csrf_exempt
 def delete_exam_schedule(request, exam_id):
+    if request.session.get('user_type') not in ['admin', 'staff', 'teacher']:
+        return JsonResponse({'status': 'error', 'message': 'Permission denied.'}, status=403)
+
     if request.method == 'POST':
         try:
             exam = get_object_or_404(ExamSchedule, id=exam_id)

@@ -64,7 +64,7 @@ class StudentViewSet(viewsets.ModelViewSet):
 def student_list_view(request):
     """Display list of students with filter options"""
     
-    allowed_roles = ['staff', 'admin', 'coordinator']
+    allowed_roles = ['staff', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         user_type = request.session.get('user_type')
         if user_type == 'student':
@@ -133,7 +133,7 @@ def student_list_view(request):
 def student_form_view(request):
     """Add or edit student information"""
     
-    allowed_roles = ['staff', 'admin', 'coordinator']
+    allowed_roles = ['staff', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
     
@@ -214,18 +214,24 @@ def student_form_view(request):
 def student_detail_view(request, student_number):
     """Display detailed information for a specific student"""
     
+    allowed_roles = ['staff', 'admin']
+    if request.session.get('user_type') not in allowed_roles:
+        # Check if user is a student viewing their own record
+        user_type = request.session.get('user_type')
+        user_email = request.session.get('user_email')
+        student = get_object_or_404(Student, student_number=student_number)
+        
+        if user_type == 'student' and student.email == user_email:
+            return render(request, 'view_student_details.html', {
+                'student': student,
+                'is_owner': True,
+                'user_type': user_type,
+            })
+        return redirect('login')
+
     student = get_object_or_404(Student, student_number=student_number)
-    
     user_type = request.session.get('user_type')
     user_email = request.session.get('user_email')
-    
-    # Check if user is the student themselves
-    is_owner = (user_type == 'student' and student.email == user_email)
-    
-    # Students can only view their own record
-    if user_type == 'student' and not is_owner:
-        messages.error(request, 'You can only view your own record.')
-        return redirect('dashboard')
     
     # Get other students in same section
     same_section_students = Student.objects.filter(
@@ -233,21 +239,17 @@ def student_detail_view(request, student_number):
         is_active=True
     ).exclude(student_number=student.student_number)[:5] if student.section else []
     
-    template_name = 'student_detail.html'
-    if user_type == 'student':
-        template_name = 'view_student_details.html'
-    
-    return render(request, template_name, {
+    return render(request, 'student_detail.html', {
         'student': student,
         'same_section_students': same_section_students,
-        'is_owner': is_owner,
+        'is_owner': False,
         'user_type': user_type,
     })
 
 def student_delete_view(request, student_number):
     """Delete a student record"""
     
-    allowed_roles = ['staff', 'admin', 'coordinator']
+    allowed_roles = ['staff', 'admin']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
     
@@ -307,7 +309,7 @@ def student_self_edit_view(request):
 def incident_report_view(request):
     """View to handle searching students and logging incident reports"""
     
-    allowed_roles = ['admin', 'teacher', 'coordinator', 'staff']
+    allowed_roles = ['admin', 'coordinator', 'staff', 'guidance']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
 
@@ -342,6 +344,10 @@ def incident_report_view(request):
     })
 
 def delete_incident_report(request, report_id):
+    allowed_roles = ['admin', 'coordinator', 'staff', 'guidance']
+    if request.session.get('user_type') not in allowed_roles:
+        return redirect('login')
+        
     report = get_object_or_404(IncidentReport, id=report_id)
     student_id = request.GET.get('student_id')
     report.delete()

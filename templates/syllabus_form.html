@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FGISS - {% if syllabus %}Edit{% else %}Create{% endif %} Syllabus</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        body { font-family: 'Open Sans', sans-serif; background-color: #f4f5f7; }
+        .btn-pink { background-color: #fb5bb2; color: white; border: none; }
+        .btn-pink:hover { background-color: #d65aa0; color: white; }
+        .card { border: none; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+        .section-label { font-size: 0.75rem; text-transform: uppercase; color: #888; font-weight: 700; margin-bottom: 8px; display: block; }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card p-4">
+                    <h3 class="fw-bold mb-4">{% if syllabus %}Edit{% else %}Create{% endif %} Syllabus</h3>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="section-label">Subject Name</label>
+                                <input type="text" name="title" class="form-control" list="subjectList" value="{{ syllabus.title|default:'' }}" placeholder="Type to filter subjects..." required>
+                                <datalist id="subjectList">
+                                    {% for subject in subjects %}
+                                    <option value="{{ subject }}">
+                                    {% endfor %}
+                                </datalist>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="section-label">Grade Level</label>
+                                <select name="grade_level" class="form-select" required>
+                                    {% for code, name in grade_choices %}
+                                    <option value="{{ code }}" {% if syllabus.grade_level == code %}selected{% endif %}>{{ name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-12">
+                                <label class="section-label">Description</label>
+                                <textarea name="description" class="form-control" rows="3">{{ syllabus.description|default:'' }}</textarea>
+                            </div>
+                            <div class="col-12">
+                                <label class="section-label">Topics (One per line)</label>
+                                <textarea name="topics" class="form-control" rows="5" placeholder="Topic 1&#10;Topic 2...">{{ syllabus.topics|default:'' }}</textarea>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="{% url 'course_syllabus' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-pink px-5">Save Syllabus</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

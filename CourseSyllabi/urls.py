@@ -1,11 +1,9 @@
-from rest_framework import routers
-from .views import SyllabusViewSet, course_syllabus_view
-from django.urls import include, path
-
-router = routers.DefaultRouter()
-router.register("api", SyllabusViewSet, basename="syllabi-api")
+from django.urls import path
+from . import views
 
 urlpatterns = [
-    path("", course_syllabus_view, name="course-syllabus"),
-    path("api/", include(router.urls))
+    path('', views.course_syllabus_view, name='course_syllabus'),
+    path('create/', views.syllabus_create, name='syllabus_create'),
+    path('update/<int:pk>/', views.syllabus_update, name='syllabus_update'),
+    path('delete/<int:pk>/', views.syllabus_delete, name='syllabus_delete'),
 ]

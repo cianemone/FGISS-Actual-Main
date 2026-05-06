@@ -56,13 +56,14 @@ def sync():
 
     # 3. Create Syllabi
     print("Syncing Syllabi...")
+    Syllabus.objects.all().delete()
     syllabi_list = [
-        ("MATH101", "Basic Mathematics", "Foundations of arithmetic.", "Addition, Subtraction, Numbers 1-100"),
-        ("ENG401", "Intermediate English", "Grammar and composition.", "Parts of speech, Sentence structure"),
-        ("SCI601", "Advanced Science", "Physics and Biology basics.", "The Cell, Simple Machines"),
+        ("Mathematics", "Grade 1", "Foundations of arithmetic.", "Addition, Subtraction, Numbers 1-100"),
+        ("English", "Grade 4", "Grammar and composition.", "Parts of speech, Sentence structure"),
+        ("Science", "Grade 6", "Physics and Biology basics.", "The Cell, Simple Machines"),
     ]
-    for code, title, desc, topics in syllabi_list:
-        Syllabus.objects.update_or_create(course_code=code, defaults={'title': title, 'description': desc, 'topics': topics})
+    for title, grade, desc, topics in syllabi_list:
+        Syllabus.objects.update_or_create(title=title, grade_level=grade, defaults={'description': desc, 'topics': topics})
 
     # 4. Create Students and Users
     students_data = [
@@ -115,9 +116,8 @@ def sync():
             username=s['email'],
             defaults={'email': s['email'], 'first_name': first_name, 'last_name': last_name}
         )
-        if created:
-            user.set_password('pass123')
-            user.save()
+        user.set_password('pass123')
+        user.save()
 
         UserProfile.objects.get_or_create(user=user, defaults={'role': Role.objects.get(id=1), 'phone': s['phone']})
         
@@ -170,9 +170,8 @@ def sync():
             username=email,
             defaults={'email': email, 'first_name': first, 'last_name': last}
         )
-        if created:
-            user.set_password('pass123')
-            user.save()
+        user.set_password('pass123')
+        user.save()
         UserProfile.objects.get_or_create(user=user, defaults={'role': Role.objects.get(id=role_id)})
 
     # 8. Create Class Schedules

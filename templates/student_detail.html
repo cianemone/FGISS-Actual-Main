@@ -148,31 +148,39 @@
             <p>Admin Portal</p>
         </div>
         <nav class="mt-4">
+            {% if request.session.user_type != 'teacher' %}
             <a href="/admin-dashboard/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            {% endif %}
 
             {% if request.session.user_type == 'admin' %}
             <a href="/user-roles/" class="nav-link"><i class="bi bi-people"></i> Users and Roles</a>
             {% endif %}
 
-            <a href="/students/web/records/" class="nav-link active"><i class="bi bi-people-fill"></i> Student Records</a>
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+            <a href="{% url 'student_list' %}" class="nav-link active"><i class="bi bi-people-fill"></i> Student Records</a>
+            {% endif %}
 
             {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
             <a href="/edit-report-cards/" class="nav-link"><i class="bi bi-journal-text"></i> Student Grades</a>
             {% endif %}
-            {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
             <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
                 <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
             </a>
             {% endif %}
-            <a href="/intervention-plan/" class="nav-link"><i class="bi bi-shield-check"></i> Student Behaviour</a>
             
-            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
+            <a href="/intervention-plan/" class="nav-link"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+            {% endif %}
+            
+            {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
             <a href="/course-syllabus/" class="nav-link"><i class="bi bi-book"></i> Course Syllabi</a>
             <a href="/exam-schedule/edit/" class="nav-link"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
             <a href="/class-schedule/" class="nav-link"><i class="bi bi-calendar3"></i> Class Schedule</a>
             {% endif %}
             
-            <a href="/logout/" class="nav-link"><i class="bi bi-box-arrow-left"></i> Logout</a>
+            <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
         </nav>
     </div>
 

@@ -44,7 +44,7 @@ def report_cards_view(request):
     })
 
 def edit_report_cards_view(request):
-    allowed_roles = ['staff', 'admin', 'coordinator']
+    allowed_roles = ['staff', 'admin', 'teacher']
     if request.session.get('user_type') not in allowed_roles:
         return redirect('login')
         

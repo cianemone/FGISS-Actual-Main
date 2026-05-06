@@ -96,6 +96,29 @@
             border: 1px solid #e5e5e5;
         }
 
+        .user-name {
+            font-weight: 700;
+            color: #333;
+            font-size: 0.95rem;
+        }
+
+        .btn-logout {
+            border: 1px solid #ccc;
+            background: transparent;
+            color: #555;
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 5px 15px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            text-decoration: none;
+        }
+
+        .btn-logout:hover {
+            background-color: #f0f0f0;
+            color: #333;
+        }
+
         /* --- MAIN LAYOUT --- */
         .main-content {
             margin-left: 260px;
@@ -147,30 +170,46 @@
         <p>Admin Portal</p>
     </div>
     <nav class="mt-4">
+        {% if request.session.user_type != 'teacher' %}
+        <a href="/admin-dashboard/" class="nav-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+        {% endif %}
+
         {% if request.session.user_type == 'admin' %}
-        <a class="nav-link" href="/admin-dashboard/"><i class="bi bi-speedometer2"></i> Dashboard</a>
-        <a class="nav-link" href="/user-roles/"><i class="bi bi-people"></i> Users and Roles</a>
+        <a href="/user-roles/" class="nav-link"><i class="bi bi-people"></i> Users and Roles</a>
+        {% endif %}
+
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+        <a href="{% url 'student_list' %}" class="nav-link"><i class="bi bi-people-fill"></i> Student Records</a>
+        {% endif %}
+
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' or request.session.user_type == 'teacher' %}
+        <a href="/edit-report-cards/" class="nav-link"><i class="bi bi-journal-text"></i> Student Grades</a>
         {% endif %}
         
-        <a class="nav-link" href="{% url 'student_list' %}"><i class="bi bi-people-fill"></i> Student Records</a>
-        <a class="nav-link" href="/edit-report-cards/"><i class="bi bi-journal-text"></i> Student Grades</a>
-        {% if request.session.user_type == 'admin' or request.session.user_type == 'teacher' or request.session.user_type == 'coordinator' %}
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
         <a class="nav-link {% if request.resolver_match.url_name == 'incident_report' %}active{% endif %}" href="{% url 'incident_report' %}">
             <i class="bi bi-exclamation-triangle-fill"></i> Incident Report
         </a>
         {% endif %}
-        <a class="nav-link" href="/intervention-plan/"><i class="bi bi-shield-check"></i> Student Behaviour</a>
-        <a class="nav-link" href="/course-syllabus/"><i class="bi bi-book"></i> Course Syllabi</a>
-        <a class="nav-link active" href="/exam-schedule/edit/"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
-        <a class="nav-link" href="/class-schedule/"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'coordinator' or request.session.user_type == 'staff' or request.session.user_type == 'guidance' %}
+        <a href="/intervention-plan/" class="nav-link"><i class="bi bi-shield-check"></i> Student Behaviour</a>
+        {% endif %}
+        
+        {% if request.session.user_type == 'admin' or request.session.user_type == 'staff' %}
+        <a href="/course-syllabus/" class="nav-link"><i class="bi bi-book"></i> Course Syllabi</a>
+        <a href="/exam-schedule/edit/" class="nav-link active"><i class="bi bi-calendar-event"></i> Exam Schedules</a>
+        <a href="/class-schedule/" class="nav-link"><i class="bi bi-calendar3"></i> Class Schedule</a>
+        {% endif %}
+        
         <a class="nav-link" href="/logout/"><i class="bi bi-box-arrow-left"></i> Logout</a>
     </nav>
 </div>
 
 <div class="topbar">
     <div class="user-profile">
-        <span class="fw-bold text-dark">{{ request.session.user_email }}</span>
-        <a href="/logout/" class="btn btn-sm btn-outline-secondary ms-2">Log Out</a>
+        <span class="user-name">{{ request.session.user_email }}</span>
+        <a href="{% url 'logout' %}" class="btn-logout">Log Out</a>
     </div>
 </div>
 
@@ -214,7 +253,7 @@
                                 </div>
                                 {% if coverage.syllabus %}
                                 <div class="text-muted smaller">
-                                    <i class="bi bi-link-45deg"></i> {{ coverage.syllabus.course_code }}
+                                    <i class="bi bi-link-45deg"></i> {{ coverage.syllabus.title }}
                                 </div>
                                 {% endif %}
                             </div>

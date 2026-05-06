@@ -161,8 +161,8 @@
 
     <div class="topbar">
         <div class="user-profile">
-            <span class="user-name">{{ student.first_name }} {{ student.last_name }} - Student</span>
-            <a href="/logout/" class="btn-logout">Logout</a>
+            <span class="user-name">{{ request.session.user_email }}</span>
+            <a href="{% url 'logout' %}" class="btn-logout">Log Out</a>
         </div>
     </div>
 
